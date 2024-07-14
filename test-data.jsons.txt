@@ -1,0 +1,25 @@
+{
+    "type": "object",
+    "properties": {
+        "name": { "type": "string" },
+        "age": { "type": "integer" },
+        "isStudent": { "type": "boolean" },
+        "courses": {
+            "type": "array",
+            "items": {
+                "$ref": "schema1#/definitions/course"
+            }
+        }
+    }
+}
+{
+    "definitions": {
+        "course": {
+            "type": "object",
+            "properties": {
+                "courseName": { "type": "string" },
+                "grade": { "type": "number" }
+            }
+        }
+    }
+}

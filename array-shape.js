@@ -1,12 +1,12 @@
 const schemaRegistry = {};
 
-// JSON Schemaを登録する関数
-function registerSchema(id, schema) {
+// Function to register a JSON schema in the registry
+function registerJsonSchema(id, schema) {
     schemaRegistry[id] = schema;
 }
 
-// $refを解決する関数
-function resolveRef(ref, baseUrl) {
+// Function to resolve a JSON schema reference
+function resolveJsonSchemaRef(ref, baseUrl) {
     const parts = ref.split('#');
     const id = parts[0] ? (parts[0].startsWith('/') ? baseUrl + parts[0] : parts[0]) : baseUrl;
     const path = parts[1] ? parts[1].split('/').slice(1) : [];
@@ -27,10 +27,10 @@ function resolveRef(ref, baseUrl) {
     return schema;
 }
 
-// JSON Schemaをarray-shape形式の文字列に変換する関数
-function generateArrayShapeString(schema, baseUrl) {
+// Function to convert a JSON schema to array-shape format
+function jsonSchemaToArrayShape(schema, baseUrl) {
     if (schema.$ref) {
-        schema = resolveRef(schema.$ref, baseUrl);
+        schema = resolveJsonSchemaRef(schema.$ref, baseUrl);
         if (!schema) {
             return 'undefined';
         }
@@ -42,7 +42,7 @@ function generateArrayShapeString(schema, baseUrl) {
                 if (schema.properties) {
                     let shape = {};
                     for (let key in schema.properties) {
-                        shape[key] = generateArrayShapeString(schema.properties[key], baseUrl);
+                        shape[key] = jsonSchemaToArrayShape(schema.properties[key], baseUrl);
                     }
                     let shapeString = 'array{';
                     shapeString += Object.keys(shape).map(key => `${key}:${shape[key]}`).join(',');
@@ -52,7 +52,7 @@ function generateArrayShapeString(schema, baseUrl) {
                 break;
             case 'array':
                 if (schema.items) {
-                    return 'array<' + generateArrayShapeString(schema.items, baseUrl) + '>';
+                    return 'array<' + jsonSchemaToArrayShape(schema.items, baseUrl) + '>';
                 }
                 break;
             case 'string':
@@ -72,8 +72,8 @@ function generateArrayShapeString(schema, baseUrl) {
     return 'undefined';
 }
 
-// テキストからJSONオブジェクトを抽出する関数
-function extractJsonObjects(text) {
+// Function to extract JSON schemas from text
+function extractJsonSchemas(text) {
     const jsonObjects = [];
     let stack = [];
     let startIndex = null;
@@ -97,23 +97,24 @@ function extractJsonObjects(text) {
     return jsonObjects;
 }
 
-// JSONスキーマを変換するメイン関数
-function convertJsonSchemas() {
+// Main function to convert JSON schemas to array-shapes
+function convertJsonSchemasToArrayShapes() {
     const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const schemas = extractJsonObjects(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
+    const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
 
     schemas.forEach((schema) => {
-        registerSchema(schema.$id, schema);
+        registerJsonSchema(schema.$id, schema);
     });
 
     const baseUrl = window.location.href;
-    const arrayShapeStrings = schemas.map(schema => generateArrayShapeString(schema, baseUrl));
+    const arrayShapeStrings = schemas.map(schema => jsonSchemaToArrayShape(schema, baseUrl));
     document.getElementById('result').textContent = arrayShapeStrings.join('\n');
 }
 
-// HTML構造
-/*
-<textarea id="jsonSchemas"></textarea>
-<button onclick="convertJsonSchemas()">Convert</button>
-<pre id="result"></pre>
-*/
+module.exports = {
+    registerJsonSchema,
+    resolveJsonSchemaRef,
+    jsonSchemaToArrayShape,
+    extractJsonSchemas,
+    convertJsonSchemasToArrayShapes
+};
