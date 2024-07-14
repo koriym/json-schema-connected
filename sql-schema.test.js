@@ -12,7 +12,7 @@ const multipleJsonSchemas = [
       "phone": { "type": "string" },
       "addressId": { "type": "string" }
     },
-    "required": ["customerId", "name", "email", "addressId"]
+    "required": ["customerId", "name", "email"]
   }
   `,
     `
@@ -37,7 +37,7 @@ CREATE TABLE customer (
   name STRING NOT NULL,
   email STRING NOT NULL,
   phone STRING,
-  address_id STRING NOT NULL
+  address_id STRING
 );
 
 CREATE TABLE address (
@@ -137,6 +137,93 @@ CREATE TABLE item (
 );
 `.trim();
 
+const complexNestedRefJsonSchemas = [
+    `
+  {
+    "$id": "company.json",
+    "type": "object",
+    "properties": {
+      "companyId": { "type": "integer" },
+      "name": { "type": "string" },
+      "departments": { "type": "array", "items": { "$ref": "department.json" } }
+    },
+    "required": ["companyId", "name"]
+  }
+  `,
+    `
+  {
+    "$id": "department.json",
+    "type": "object",
+    "properties": {
+      "departmentId": { "type": "integer" },
+      "name": { "type": "string" },
+      "manager": { "$ref": "person.json" },
+      "employees": { "type": "array", "items": { "$ref": "person.json" } }
+    },
+    "required": ["departmentId", "name"]
+  }
+  `,
+    `
+  {
+    "$id": "person.json",
+    "type": "object",
+    "properties": {
+      "personId": { "type": "integer" },
+      "firstName": { "type": "string" },
+      "lastName": { "type": "string" },
+      "address": { "$ref": "address.json" },
+      "email": { "type": "string" }
+    },
+    "required": ["personId", "firstName", "lastName"]
+  }
+  `,
+    `
+  {
+    "$id": "address.json",
+    "type": "object",
+    "properties": {
+      "addressId": { "type": "string" },
+      "street": { "type": "string" },
+      "city": { "type": "string" },
+      "state": { "type": "string" },
+      "postalCode": { "type": "string" }
+    },
+    "required": ["addressId"]
+  }
+  `
+];
+
+const expectedComplexNestedCreateTableSQL = `
+CREATE TABLE company (
+  company_id INT NOT NULL,
+  name STRING NOT NULL,
+  departments JSON
+);
+
+CREATE TABLE department (
+  department_id INT NOT NULL,
+  name STRING NOT NULL,
+  manager JSON,
+  employees JSON
+);
+
+CREATE TABLE person (
+  person_id INT NOT NULL,
+  first_name STRING NOT NULL,
+  last_name STRING NOT NULL,
+  address JSON,
+  email STRING
+);
+
+CREATE TABLE address (
+  address_id STRING NOT NULL,
+  street STRING,
+  city STRING,
+  state STRING,
+  postal_code STRING
+);
+`.trim();
+
 test('jsonSchemasToCreateTables should convert JSON Schemas with $ref to SQL CREATE statements', () => {
     const result = sqlSchema.jsonSchemasToCreateTables(multipleJsonSchemas);
     expect(result).toBe(expectedCreateTableSQL);
@@ -150,4 +237,9 @@ test('jsonSchemasToCreateTables should convert a single JSON Schema to SQL CREAT
 test('jsonSchemasToCreateTables should handle nested $refs correctly', () => {
     const result = sqlSchema.jsonSchemasToCreateTables(nestedRefJsonSchemas);
     expect(result).toBe(expectedNestedCreateTableSQL);
+});
+
+test('jsonSchemasToCreateTables should handle complex nested $refs correctly', () => {
+    const result = sqlSchema.jsonSchemasToCreateTables(complexNestedRefJsonSchemas);
+    expect(result).toBe(expectedComplexNestedCreateTableSQL);
 });
