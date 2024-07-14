@@ -1,0 +1,14 @@
+{
+  "name": "json-schema2array-shape",
+  "version": "1.0.0",
+  "description": "Convert JSON Schema to array shape",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Akihito Koriyama",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}
