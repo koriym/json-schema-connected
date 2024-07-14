@@ -1,7 +1,9 @@
 # JSON Schema to Array Shape Converter
 [![Node.js CI](https://github.com/koriym/json-schema-to-array-shape/actions/workflows/nodejs.yml/badge.svg)](https://github.com/koriym/json-schema-to-array-shape/actions/workflows/nodejs.yml)
 
-This project converts JSON schemas to PHP PHPStan or Psalm compatible `array-shape` format.
+<img src="images/json-schema-to-array-shape.png" width="150px" alt="logo">
+
+Converts JSON schemas to PHP PHPStan or Psalm compatible `array-shape` format.
 
 ## Features
 
