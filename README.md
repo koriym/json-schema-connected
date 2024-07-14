@@ -1,7 +1,7 @@
 # json-schema-connected
 [![Node.js CI](https://github.com/koriym/json-schema-conneceted/actions/workflows/nodejs.yml/badge.svg)](https://github.com/koriym/json-schema-to-array-shape/actions/workflows/nodejs.yml)
 
-<img src="images/json-schema-to-array-shape.png" width="250px" alt="logo">
+<img src="images/json-schema-connected.png" width="250px" alt="logo">
 
 `json-schema-connected` is a JavaScript library for converting JSON Schemas to PHP array shapes and SQL CREATE statements. It helps in defining the structure and format of your JSON data and generating corresponding representations in PHP and SQL.
 
