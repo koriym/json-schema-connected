@@ -30,7 +30,7 @@ You can include the library directly in your HTML via the following URL:
 
 ## Usage
 
-### JSON Schema to PHP JSON Schema to PHP Array Shape and SQL CREATE Statements
+### JSON Schema to PHP Array Shape and SQL CREATE Statements
 
 Include the array-shape.js and sql-schema.js scripts and use the provided functions to convert JSON Schemas to PHP array shapes and SQL CREATE statements.
 
