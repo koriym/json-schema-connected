@@ -21,7 +21,7 @@ You can use the online version of this converter without installing anything on 
 First, clone the repository and navigate into the project directory:
 
 ```bash
-git clone https://github.com/your-username/json-schema2array-shape.git
+git clone https://github.com/koriym/json-schema-to-array-shape.git
 cd json-schema2array-shape
 ```
 
@@ -29,6 +29,15 @@ Then, install the dependencies:
 
 ```bash
 npm install
+```
+## Option 2: Using External Script
+
+Alternatively, you can use the external script directly in your HTML file without any local installation.
+
+Include the following script in your HTML file:
+
+```
+<script src="https://koriym.github.io/json-schema-to-array-shape/array-shape.js"></script>
 ```
 
 ## Usage
