@@ -1,25 +1,46 @@
 {
-    "type": "object",
-    "properties": {
-        "name": { "type": "string" },
-        "age": { "type": "integer" },
-        "isStudent": { "type": "boolean" },
-        "courses": {
-            "type": "array",
-            "items": {
-                "$ref": "schema1#/definitions/course"
-            }
+  "$id": "complex.json",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "address": { "$ref": "address.json" },
+    "contacts": {
+      "type": "array",
+      "items": {
+        "$ref": "contact.json"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
         }
+      }
     }
+  }
 }
 {
-    "definitions": {
-        "course": {
-            "type": "object",
-            "properties": {
-                "courseName": { "type": "string" },
-                "grade": { "type": "number" }
-            }
-        }
-    }
+  "$id": "address.json",
+  "type": "object",
+  "properties": {
+    "street": { "type": "string" },
+    "city": { "type": "string" },
+    "state": { "type": "string" },
+    "postalCode": { "type": "string" },
+    "country": { "type": "string" }
+  }
+}
+{
+  "$id": "contact.json",
+  "type": "object",
+  "properties": {
+    "type": { "type": "string" },
+    "value": { "type": "string" },
+    "primary": { "type": "boolean" }
+  }
 }
