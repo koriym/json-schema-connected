@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>JsonSchema to Array Shape</title>
+  <meta charset="UTF-8">
+  <title>JsonSchema to Array Shape</title>
 </head>
 <body>
+<label for="jsonSchemas">JSON Schemas:</label>
 <textarea id="jsonSchemas" rows="10" cols="50">
 {
   "$id": "company.json",
@@ -111,10 +112,10 @@
   }
 }
 </textarea>
-<button onclick="convertJsonSchemasToArrayShapes()">Convert</button>
+<button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert</button>
+<label for="result">Result:</label>
 <pre id="result"></pre>
 
 <script src="array-shape.js"></script>
 </body>
 </html>
-
