@@ -1,22 +1,20 @@
-const schemaRegistry = {};
+const arrayShapeSchemaRegistry = {};
 
-// Function to register a JSON schema in the registry
 function registerJsonSchema(id, schema) {
-    schemaRegistry[id] = schema;
+    arrayShapeSchemaRegistry[id] = schema;
 }
 
-// Function to resolve a JSON schema reference
 function resolveJsonSchemaRef(ref, baseUrl) {
     const parts = ref.split('#');
     const id = parts[0] ? (parts[0].startsWith('/') ? baseUrl + parts[0] : parts[0]) : baseUrl;
     const path = parts[1] ? parts[1].split('/').slice(1) : [];
 
-    if (!schemaRegistry[id]) {
+    if (!arrayShapeSchemaRegistry[id]) {
         console.error(`Schema with id ${id} not found in registry`);
         return null;
     }
 
-    let schema = schemaRegistry[id];
+    let schema = arrayShapeSchemaRegistry[id];
     for (let part of path) {
         if (!schema[part]) {
             console.error(`Property ${part} not found in schema ${id}`);
@@ -27,8 +25,9 @@ function resolveJsonSchemaRef(ref, baseUrl) {
     return schema;
 }
 
-// Function to convert a JSON schema to array-shape format
 function jsonSchemaToArrayShape(schema, baseUrl) {
+    let shape = {};
+
     if (schema.$ref) {
         schema = resolveJsonSchemaRef(schema.$ref, baseUrl);
         if (!schema) {
@@ -37,44 +36,35 @@ function jsonSchemaToArrayShape(schema, baseUrl) {
     }
 
     if (schema.type) {
-        switch (schema.type) {
-            case 'object':
-                if (schema.properties) {
-                    let shape = {};
-                    for (let key in schema.properties) {
-                        shape[key] = jsonSchemaToArrayShape(schema.properties[key], baseUrl);
-                    }
-                    let shapeString = 'array{';
-                    shapeString += Object.keys(shape).map(key => `${key}:${shape[key]}`).join(',');
-                    shapeString += '}';
-                    return shapeString;
-                }
-                break;
-            case 'array':
-                if (schema.items) {
-                    return 'array<' + jsonSchemaToArrayShape(schema.items, baseUrl) + '>';
-                }
-                break;
-            case 'string':
-                return 'string';
-            case 'number':
-                return 'int|float';
-            case 'integer':
-                return 'int';
-            case 'boolean':
-                return 'bool';
-            case 'null':
-                return 'null';
-            default:
-                return 'mixed';
+        if (schema.type === 'object' && schema.properties) {
+            for (let key in schema.properties) {
+                shape[key] = jsonSchemaToArrayShape(schema.properties[key], baseUrl);
+            }
+        } else if (schema.type === 'array' && schema.items) {
+            shape = 'array<' + jsonSchemaToArrayShape(schema.items, baseUrl) + '>';
+        } else if (schema.type === 'string') {
+            shape = 'string';
+        } else if (schema.type === 'number' || schema.type === 'integer') {
+            shape = 'int|float';
+        } else if (schema.type === 'boolean') {
+            shape = 'bool';
+        } else if (schema.type === 'null') {
+            shape = 'null';
         }
     }
-    return 'undefined';
+
+    if (typeof shape === 'object') {
+        let shapeString = 'array{';
+        shapeString += Object.keys(shape).map(key => `${key}:${shape[key]}`).join(',');
+        shapeString += '}';
+        return shapeString;
+    } else {
+        return shape;
+    }
 }
 
-// Function to extract JSON schemas from text
 function extractJsonSchemas(text) {
-    const jsonObjects = [];
+    const jsonSchemas = [];
     let stack = [];
     let startIndex = null;
 
@@ -88,33 +78,44 @@ function extractJsonSchemas(text) {
             stack.push(char);
         } else if (char === '}') {
             if (stack.length === 1) {
-                jsonObjects.push(text.slice(startIndex, i + 1));
+                jsonSchemas.push(text.slice(startIndex, i + 1));
             }
             stack.pop();
         }
     }
 
-    return jsonObjects;
+    return jsonSchemas;
 }
 
-// Main function to convert JSON schemas to array-shapes
-function convertJsonSchemasToArrayShapes() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+function convertJsonSchemasToArrayShapes(jsonSchemasText) {
     const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
 
     schemas.forEach((schema) => {
         registerJsonSchema(schema.$id, schema);
     });
 
-    const baseUrl = window.location.href;
-    const arrayShapeStrings = schemas.map(schema => jsonSchemaToArrayShape(schema, baseUrl));
-    document.getElementById('result').textContent = arrayShapeStrings.join('\n');
+    const baseUrl = typeof window !== 'undefined' ? window.location.href : '';
+    return schemas.map(schema => jsonSchemaToArrayShape(schema, baseUrl));
 }
 
-module.exports = {
-    registerJsonSchema,
-    resolveJsonSchemaRef,
-    jsonSchemaToArrayShape,
-    extractJsonSchemas,
-    convertJsonSchemasToArrayShapes
-};
+// グローバル変数として公開（ブラウザ環境）
+if (typeof window !== 'undefined') {
+    window.arrayShape = {
+        registerJsonSchema,
+        resolveJsonSchemaRef,
+        jsonSchemaToArrayShape,
+        extractJsonSchemas,
+        convertJsonSchemasToArrayShapes
+    };
+}
+
+// モジュールエクスポート（Node.js環境）
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        registerJsonSchema,
+        resolveJsonSchemaRef,
+        jsonSchemaToArrayShape,
+        extractJsonSchemas,
+        convertJsonSchemasToArrayShapes
+    };
+}
