@@ -1,14 +1,20 @@
 {
   "name": "json-schema2array-shape",
   "version": "1.0.0",
-  "description": "Convert JSON Schema to array shape",
+  "description": "Convert JSON Schema to PHP array shape",
+  "main": "array-shape.js",
   "scripts": {
     "test": "jest"
   },
-  "author": "Akihito Koriyama",
+  "keywords": [
+    "json-schema",
+    "array-shape",
+    "convert"
+  ],  "author": "Akihito Koriyama",
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
-  }
+  },
+  "dependencies": {}
 }
