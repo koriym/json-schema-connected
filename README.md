@@ -8,9 +8,8 @@ Converts JSON schemas to PHP PHPStan or Psalm compatible `array-shape` format.
 ## Features
 
 - Convert JSON schemas to `array-shape` format
-- Register JSON schemas
+- Accept multiple schemas.
 - Resolve `$ref` references within schemas
-- Extract JSON schemas from text
 
 ## Online Service
 
