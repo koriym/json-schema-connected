@@ -2,120 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>JsonSchema to Array Shape</title>
+  <title>JSON Schema to Array Shape Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    textarea, pre {
+      width: 100%;
+      margin-bottom: 10px;
+      resize: none; /* Prevent manual resizing */
+      overflow: hidden; /* Hide overflow */
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    pre {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border: 1px solid #ddd;
+      overflow-x: auto;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+  </style>
 </head>
 <body>
-<label for="jsonSchemas">JSON Schemas:</label>
-<textarea id="jsonSchemas" rows="10" cols="50">
-{
-  "$id": "company.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Company",
-  "type": "object",
-  "properties": {
-    "company_id": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    },
-    "departments": {
-      "type": "array",
-      "items": {
-        "$ref": "department.json"
-      }
-    },
-    "address": {
-      "$ref": "address.json"
-    },
-    "contact": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string",
-          "format": "email"
-        },
-        "phone": {
-          "type": "string"
-        }
-      },
-      "required": ["email"]
-    }
-  }
-}
-{
-  "$id": "department.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Department",
-  "type": "object",
-  "properties": {
-    "department_id": {
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    },
-    "manager": {
-      "$ref": "person.json"
-    },
-    "employees": {
-      "type": "array",
-      "items": {
-        "$ref": "person.json"
-      }
-    }
-  }
-}
+<h1>JSON Schema to Array Shape Converter</h1>
+<p>Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape.</p>
+<div>
+  <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
+  <textarea id="jsonSchemas" rows="10" cols="50" oninput="autoResize(this)">
 {
   "$id": "person.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Person",
   "type": "object",
   "properties": {
-    "person_id": {
-      "type": "string"
-    },
-    "first_name": {
-      "type": "string"
-    },
-    "last_name": {
-      "type": "string"
-    },
-    "address": {
-      "$ref": "address.json"
-    },
-    "email": {
-      "type": "string",
-      "format": "email"
-    }
-  },
-  "required": ["person_id", "first_name", "last_name"]
+    "name": { "type": "string" },
+    "address": { "$ref": "address.json" }
+  }
 }
 {
   "$id": "address.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Address",
   "type": "object",
   "properties": {
-    "street_address": {
-      "type": "string"
-    },
-    "city": {
-      "type": "string"
-    },
-    "state": {
-      "type": "string"
-    },
-    "postal_code": {
-      "type": "string"
-    }
+    "street": { "type": "string" },
+    "city": { "type": "string" }
   }
 }
 </textarea>
-<button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert</button>
-<label for="result">Result:</label>
-<pre id="result"></pre>
+</div>
+<div>
+  <button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert</button>
+</div>
+<div>
+  <label for="result">Result:</label>
+  <pre id="result"></pre>
+</div>
 
 <script src="array-shape.js"></script>
+<script>
+  function autoResize(textarea) {
+    textarea.style.height = 'auto'; // Reset the height
+    textarea.style.height = textarea.scrollHeight + 'px'; // Set the height to the scroll height
+  }
+
+  // Initial resize
+  document.addEventListener("DOMContentLoaded", function() {
+    const textarea = document.getElementById('jsonSchemas');
+    autoResize(textarea);
+  });
+</script>
 </body>
 </html>
