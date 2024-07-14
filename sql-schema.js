@@ -10,6 +10,12 @@ function camelToSnake(camelStr) {
     return camelStr.replace(/([A-Z])/g, '_$1').toLowerCase();
 }
 
+// $refを解決する関数
+function resolveRef(ref, schemaRegistry) {
+    const refSchemaId = ref.replace('#', '').replace('/', '');
+    return schemaRegistry[refSchemaId];
+}
+
 // JSONスキーマからSQLのCREATE文を生成する関数
 function jsonSchemaToCreateTable(jsonSchema, tableName, schemaRegistry) {
     const schema = JSON.parse(jsonSchema);
@@ -21,9 +27,8 @@ function jsonSchemaToCreateTable(jsonSchema, tableName, schemaRegistry) {
         let columnType;
 
         if (properties[prop].$ref) {
-            const refSchemaId = properties[prop].$ref.replace('#', '').replace('/', '');
-            const refSchema = schemaRegistry[refSchemaId];
-            columnType = refSchema ? refSchema.type.toUpperCase() : "STRING";
+            const refSchema = resolveRef(properties[prop].$ref, schemaRegistry);
+            columnType = refSchema && refSchema.type ? refSchema.type.toUpperCase() : "STRING";
         } else {
             columnType = properties[prop].type ? properties[prop].type.toUpperCase() : "STRING";
         }

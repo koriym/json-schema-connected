@@ -36,8 +36,8 @@ CREATE TABLE customer (
   customer_id INT NOT NULL,
   name STRING NOT NULL,
   email STRING NOT NULL,
-  phone STRING,
-  address_id STRING
+  address_id INT,
+  phone STRING
 );
 
 CREATE TABLE address (
