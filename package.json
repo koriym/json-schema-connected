@@ -1,7 +1,7 @@
 {
-  "name": "json-schema2array-shape",
+  "name": "json-schema-connected",
   "version": "1.0.0",
-  "description": "Convert JSON Schema to PHP array shape",
+  "description": "A versatile tool for connecting JSON Schema with various technologies like databases, PHP, and more.",
   "main": "array-shape.js",
   "scripts": {
     "test": "jest"
@@ -9,8 +9,13 @@
   "keywords": [
     "json-schema",
     "array-shape",
-    "convert"
-  ],  "author": "Akihito Koriyama",
+    "convert",
+    "sql",
+    "database",
+    "alps",
+    "api"
+  ],
+  "author": "Akihito Koriyama",
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",
