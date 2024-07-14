@@ -1,5 +1,5 @@
 # json-schema-connected
-[![Node.js CI](https://github.com/koriym/json-schema-conneceted/actions/workflows/nodejs.yml/badge.svg)](https://github.com/koriym/json-schema-to-array-shape/actions/workflows/nodejs.yml)
+[![Node.js CI](https://github.com/koriym/json-schema-connected/actions/workflows/nodejs.yml/badge.svg)](https://github.com/koriym/json-schema-to-array-shape/actions/workflows/nodejs.yml)
 
 <img src="images/json-schema-to-array-shape.png" width="250px" alt="logo">
 
