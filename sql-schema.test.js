@@ -12,7 +12,7 @@ const multipleJsonSchemas = [
       "phone": { "type": "string" },
       "addressId": { "type": "string" }
     },
-    "required": ["customerId", "name", "email"]
+    "required": ["customerId", "name", "email", "addressId"]
   }
   `,
     `
