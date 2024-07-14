@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>JSON Schema to Array Shape Converter</title>
+  <title>JSON Schema Converter</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,12 +15,13 @@
     textarea, pre {
       width: 100%;
       margin-bottom: 10px;
-      resize: none; /* Prevent manual resizing */
-      overflow: hidden; /* Hide overflow */
+      resize: none;
+      overflow: hidden;
     }
     button {
       padding: 10px 20px;
       font-size: 16px;
+      margin-right: 10px;
     }
     pre {
       background-color: #f4f4f4;
@@ -43,16 +44,17 @@
 <body>
 <div class="header">
   <img src="images/json-schema-to-array-shape.png" width="150px" alt="logo">
-  <h1>JSON Schema to Array Shape Converter</h1>
+  <h1>JSON Schema Converter</h1>
 </div>
-<p>Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape.</p>
+<p>Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape or SQL.</p>
 <div>
   <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
   <textarea id="jsonSchemas" rows="10" cols="50" oninput="autoResize(this)">
 {
-  "$id": "person.json",
+  "$id": "customer.json",
   "type": "object",
   "properties": {
+    "customerId": { "type": "integer" },
     "name": { "type": "string" },
     "address": { "$ref": "address.json" }
   }
@@ -61,14 +63,19 @@
   "$id": "address.json",
   "type": "object",
   "properties": {
+    "addressId": { "type": "integer" },
     "street": { "type": "string" },
-    "city": { "type": "string" }
-  }
+    "city": { "type": "string" },
+    "state": { "type": "string" },
+    "postalCode": { "type": "string" }
+  },
+  "required": ["addressId"]
 }
 </textarea>
 </div>
 <div>
-  <button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert</button>
+  <button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert to Array Shape</button>
+  <button onclick="convertJsonSchemasToSQL()" aria-label="Convert JSON Schemas to SQL">Convert to SQL</button>
 </div>
 <div>
   <label for="result">Result:</label>
@@ -76,6 +83,7 @@
 </div>
 
 <script src="array-shape.js"></script>
+<script src="sql-schema.js"></script>
 <script>
   function autoResize(textarea) {
     textarea.style.height = 'auto'; // Reset the height
@@ -87,6 +95,18 @@
     const textarea = document.getElementById('jsonSchemas');
     autoResize(textarea);
   });
+
+  function convertJsonSchemasToArrayShapes() {
+    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+    const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
+    document.getElementById('result').textContent = arrayShapes.join('\n');
+  }
+
+  function convertJsonSchemasToSQL() {
+    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+    const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
+    document.getElementById('result').textContent = createTableSQL;
+  }
 </script>
 
 <footer>
