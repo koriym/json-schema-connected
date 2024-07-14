@@ -46,7 +46,7 @@
   <img src="images/json-schema-connected.png" width="150px" alt="logo">
   <h1>json-schema-connected Converter</h1>
 </div>
-<p>Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape or SQL.</p>
+<p>Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape, SQL, or Markdown.</p>
 <div>
   <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
   <textarea id="jsonSchemas" rows="10" cols="50" oninput="autoResize(this)">
@@ -54,28 +54,49 @@
   "$id": "customer.json",
   "type": "object",
   "properties": {
-    "customerId": { "type": "integer" },
-    "name": { "type": "string" },
-    "address": { "$ref": "address.json" }
-  }
+    "customerId": {
+      "type": "integer",
+      "description": "The unique identifier for a customer.",
+      "minimum": 1
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the customer.",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "address": {
+      "$ref": "address.json",
+      "description": "The address of the customer."
+    }
+  },
+  "required": ["customerId", "name", "address"]
 }
 {
   "$id": "address.json",
   "type": "object",
   "properties": {
-    "addressId": { "type": "integer" },
-    "street": { "type": "string" },
-    "city": { "type": "string" },
-    "state": { "type": "string" },
-    "postalCode": { "type": "string" }
+    "street": {
+      "type": "string",
+      "description": "The street name and number.",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "city": {
+      "type": "string",
+      "description": "The city name.",
+      "minLength": 1,
+      "maxLength": 50
+    }
   },
-  "required": ["addressId"]
+  "required": ["street", "city"]
 }
 </textarea>
 </div>
 <div>
   <button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert to Array Shape</button>
   <button onclick="convertJsonSchemasToSQL()" aria-label="Convert JSON Schemas to SQL">Convert to SQL</button>
+  <button onclick="convertJsonSchemasToMarkdown()" aria-label="Convert JSON Schemas to Markdown">Convert to Markdown</button>
 </div>
 <div>
   <label for="result" class="sr-only">Result:</label>
@@ -84,6 +105,7 @@
 
 <script src="array-shape.js"></script>
 <script src="sql-schema.js"></script>
+<script src="schema-markdown.js"></script>
 <script>
   function autoResize(textarea) {
     textarea.style.height = 'auto'; // Reset the height
@@ -107,6 +129,49 @@
     const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
     document.getElementById('result').textContent = createTableSQL;
   }
+
+  function convertJsonSchemasToMarkdown() {
+    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+    const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
+    const baseDir = '';  // ベースディレクトリの指定
+    const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
+    document.getElementById('result').textContent = markdown;
+  }
+
+  // JSONスキーマを抽出する関数
+  function extractJsonSchemas(text) {
+    const jsonSchemas = [];
+    let stack = [];
+    let startIndex = null;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      if (char === '{') {
+        if (stack.length === 0) {
+          startIndex = i;
+        }
+        stack.push(char);
+      } else if (char === '}') {
+        if (stack.length === 1) {
+          jsonSchemas.push(text.slice(startIndex, i + 1));
+        }
+        stack.pop();
+      }
+    }
+
+    return jsonSchemas;
+  }
+
+  // JSONスキーマのレジストリを初期化
+  window.schemaRegistry = {};
+  document.addEventListener("DOMContentLoaded", function() {
+    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+    const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
+    schemas.forEach((schema) => {
+      window.schemaRegistry[schema.$id] = schema;
+    });
+  });
 </script>
 
 <footer>
