@@ -10,10 +10,26 @@ function camelToSnake(camelStr) {
     return camelStr.replace(/([A-Z])/g, '_$1').toLowerCase();
 }
 
-// $refを解決する関数
+// $refを再帰的に解決する関数
 function resolveRef(ref, schemaRegistry) {
     const refSchemaId = ref.replace('#', '').replace('/', '');
-    return schemaRegistry[refSchemaId];
+    const refSchema = schemaRegistry[refSchemaId];
+
+    if (refSchema && refSchema.$ref) {
+        return resolveRef(refSchema.$ref, schemaRegistry);
+    }
+
+    return refSchema;
+}
+
+// プロパティの型を取得する関数
+function getColumnType(property, schemaRegistry) {
+    if (property.$ref) {
+        const refSchema = resolveRef(property.$ref, schemaRegistry);
+        return refSchema && refSchema.type ? refSchema.type.toUpperCase() : "STRING";
+    } else {
+        return property.type ? property.type.toUpperCase() : "STRING";
+    }
 }
 
 // JSONスキーマからSQLのCREATE文を生成する関数
@@ -24,14 +40,7 @@ function jsonSchemaToCreateTable(jsonSchema, tableName, schemaRegistry) {
 
     const columns = Object.keys(properties).map(prop => {
         const columnName = camelToSnake(prop);
-        let columnType;
-
-        if (properties[prop].$ref) {
-            const refSchema = resolveRef(properties[prop].$ref, schemaRegistry);
-            columnType = refSchema && refSchema.type ? refSchema.type.toUpperCase() : "STRING";
-        } else {
-            columnType = properties[prop].type ? properties[prop].type.toUpperCase() : "STRING";
-        }
+        let columnType = getColumnType(properties[prop], schemaRegistry);
 
         switch (columnType) {
             case "INTEGER":
@@ -47,8 +56,13 @@ function jsonSchemaToCreateTable(jsonSchema, tableName, schemaRegistry) {
                 columnType = "NULL";
                 break;
             case "ARRAY":
+                columnType = "JSON";
+                break;
             case "OBJECT":
-                return null; // SQLでは直接的にサポートされないためスキップ
+                columnType = "JSON";
+                break;
+            default:
+                columnType = "STRING";
         }
         const columnDef = `${columnName} ${columnType}${required.includes(prop) ? ' NOT NULL' : ''}`;
         return columnDef;
