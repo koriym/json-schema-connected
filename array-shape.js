@@ -1,55 +1,78 @@
 const schemaRegistry = {};
 
+// JSON Schemaを登録する関数
 function registerSchema(id, schema) {
     schemaRegistry[id] = schema;
 }
 
+// $refを解決する関数
 function resolveRef(ref, baseUrl) {
     const parts = ref.split('#');
     const id = parts[0] ? (parts[0].startsWith('/') ? baseUrl + parts[0] : parts[0]) : baseUrl;
     const path = parts[1] ? parts[1].split('/').slice(1) : [];
+
+    if (!schemaRegistry[id]) {
+        console.error(`Schema with id ${id} not found in registry`);
+        return null;
+    }
+
     let schema = schemaRegistry[id];
     for (let part of path) {
+        if (!schema[part]) {
+            console.error(`Property ${part} not found in schema ${id}`);
+            return null;
+        }
         schema = schema[part];
     }
     return schema;
 }
 
+// JSON Schemaをarray-shape形式の文字列に変換する関数
 function generateArrayShapeString(schema, baseUrl) {
-    let shape = {};
-
     if (schema.$ref) {
         schema = resolveRef(schema.$ref, baseUrl);
-    }
-
-    if (schema.type) {
-        if (schema.type === 'object' && schema.properties) {
-            for (let key in schema.properties) {
-                shape[key] = generateArrayShapeString(schema.properties[key], baseUrl);
-            }
-        } else if (schema.type === 'array' && schema.items) {
-            shape = 'array<' + generateArrayShapeString(schema.items, baseUrl) + '>';
-        } else if (schema.type === 'string') {
-            shape = 'string';
-        } else if (schema.type === 'number' || schema.type === 'integer') {
-            shape = 'int|float';
-        } else if (schema.type === 'boolean') {
-            shape = 'bool';
-        } else if (schema.type === 'null') {
-            shape = 'null';
+        if (!schema) {
+            return 'undefined';
         }
     }
 
-    if (typeof shape === 'object') {
-        let shapeString = 'array{';
-        shapeString += Object.keys(shape).map(key => `${key}:${shape[key]}`).join(',');
-        shapeString += '}';
-        return shapeString;
-    } else {
-        return shape;
+    if (schema.type) {
+        switch (schema.type) {
+            case 'object':
+                if (schema.properties) {
+                    let shape = {};
+                    for (let key in schema.properties) {
+                        shape[key] = generateArrayShapeString(schema.properties[key], baseUrl);
+                    }
+                    let shapeString = 'array{';
+                    shapeString += Object.keys(shape).map(key => `${key}:${shape[key]}`).join(',');
+                    shapeString += '}';
+                    return shapeString;
+                }
+                break;
+            case 'array':
+                if (schema.items) {
+                    return 'array<' + generateArrayShapeString(schema.items, baseUrl) + '>';
+                }
+                break;
+            case 'string':
+                return 'string';
+            case 'number':
+                return 'int|float';
+            case 'integer':
+                return 'int';
+            case 'boolean':
+                return 'bool';
+            case 'null':
+                return 'null';
+            default:
+                return 'mixed';
+        }
     }
+    return 'undefined';
 }
 
+// テキストからJSONオブジェクトを抽出する関数
 function extractJsonObjects(text) {
     const jsonObjects = [];
     let stack = [];
@@ -74,15 +97,23 @@ function extractJsonObjects(text) {
     return jsonObjects;
 }
 
+// JSONスキーマを変換するメイン関数
 function convertJsonSchemas() {
     const jsonSchemasText = document.getElementById('jsonSchemas').value;
     const schemas = extractJsonObjects(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
 
-    schemas.forEach((schema, index) => {
-        registerSchema(`schema${index}`, schema);
+    schemas.forEach((schema) => {
+        registerSchema(schema.$id, schema);
     });
 
     const baseUrl = window.location.href;
-    const arrayShapeString = generateArrayShapeString(schemas[0], baseUrl);
-    document.getElementById('result').textContent = arrayShapeString;
+    const arrayShapeStrings = schemas.map(schema => generateArrayShapeString(schema, baseUrl));
+    document.getElementById('result').textContent = arrayShapeStrings.join('\n');
 }
+
+// HTML構造
+/*
+<textarea id="jsonSchemas"></textarea>
+<button onclick="convertJsonSchemas()">Convert</button>
+<pre id="result"></pre>
+*/
