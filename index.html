@@ -5,8 +5,47 @@
     <title>JsonSchema to Array Shape</title>
 </head>
 <body>
-<textarea id="jsonSchema" rows="10" cols="50"></textarea>
-<button onclick="convertJsonSchema()">Convert</button>
+<textarea id="jsonSchemas" rows="10" cols="50">
+{
+  "$id": "ticket.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ticket",
+  "type": "object",
+  "required": ["id", "title", "date_created"],
+  "properties": {
+    "id": {
+      "description": "The unique identifier for a ticket.",
+      "type": "string",
+      "maxLength": 64
+    },
+    "title": {
+      "description": "The unique identifier for a ticket.",
+      "type": "string",
+      "maxLength": 255
+    },
+    "date_created": {
+      "description": "The date and time that the ticket was created",
+      "type": "string",
+      "format": "datetime"
+    }
+  }
+}
+    {
+  "$id": "tickets.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tickets",
+  "type": "object",
+  "required": ["tickets"],
+  "properties": {
+    "tickets": {
+      "type": "array",
+      "items":{"$ref": "./ticket.json"}
+    }
+  }
+}
+
+</textarea>
+<button onclick="convertJsonSchemas()">Convert</button>
 <pre id="result"></pre>
 
 <script src="./array-shape.js"></script>
