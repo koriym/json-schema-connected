@@ -7,48 +7,114 @@
 <body>
 <textarea id="jsonSchemas" rows="10" cols="50">
 {
-  "$id": "ticket.json",
+  "$id": "company.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Ticket",
+  "title": "Company",
   "type": "object",
-  "required": ["id", "title", "date_created"],
   "properties": {
-    "id": {
-      "description": "The unique identifier for a ticket.",
-      "type": "string",
-      "maxLength": 64
+    "company_id": {
+      "type": "string"
     },
-    "title": {
-      "description": "The unique identifier for a ticket.",
-      "type": "string",
-      "maxLength": 255
+    "name": {
+      "type": "string"
     },
-    "date_created": {
-      "description": "The date and time that the ticket was created",
-      "type": "string",
-      "format": "datetime"
-    }
-  }
-}
-    {
-  "$id": "tickets.json",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Tickets",
-  "type": "object",
-  "required": ["tickets"],
-  "properties": {
-    "tickets": {
+    "departments": {
       "type": "array",
-      "items":{"$ref": "./ticket.json"}
+      "items": {
+        "$ref": "department.json"
+      }
+    },
+    "address": {
+      "$ref": "address.json"
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        }
+      },
+      "required": ["email"]
     }
   }
 }
-
+{
+  "$id": "department.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Department",
+  "type": "object",
+  "properties": {
+    "department_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "manager": {
+      "$ref": "person.json"
+    },
+    "employees": {
+      "type": "array",
+      "items": {
+        "$ref": "person.json"
+      }
+    }
+  }
+}
+{
+  "$id": "person.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Person",
+  "type": "object",
+  "properties": {
+    "person_id": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "address.json"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    }
+  },
+  "required": ["person_id", "first_name", "last_name"]
+}
+{
+  "$id": "address.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Address",
+  "type": "object",
+  "properties": {
+    "street_address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    }
+  }
+}
 </textarea>
 <button onclick="convertJsonSchemas()">Convert</button>
 <pre id="result"></pre>
 
-<script src="./array-shape.js"></script>
+<script src="array-shape.js"></script>
 </body>
 </html>
 
