@@ -1,80 +1,82 @@
 {
-  "$comment": "This is a complex E-commerce schema set demonstrating advanced JSON Schema features and extensive use of $ref across multiple files. It includes user, address, product, order, money, rating, and orderItem schemas, showcasing intricate relationships and nested structures typical in real-world applications. This schema set highlights json-schema-connected's ability to resolve complex cross-references and generate comprehensive documentation for interconnected data models.",
   "$id": "user.json",
   "type": "object",
   "properties": {
     "userId": {
       "type": "string",
       "format": "uuid",
-      "description": "The unique identifier for a user."
+      "description": "Unique identifier for the user",
+      "maxLength": 36
     },
     "username": {
       "type": "string",
-      "description": "The user's username.",
+      "description": "The user's username",
       "minLength": 3,
-      "maxLength": 20
+      "maxLength": 30
     },
     "email": {
       "type": "string",
       "format": "email",
-      "description": "The user's email address."
+      "description": "The user's email address",
+      "maxLength": 255
+    },
+    "passwordHash": {
+      "type": "string",
+      "description": "Hashed password",
+      "maxLength": 255
     },
     "fullName": {
       "type": "string",
-      "description": "The user's full name."
+      "description": "User's full name",
+      "maxLength": 100
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "User's phone number",
+      "maxLength": 20
+    },
+    "dateOfBirth": {
+      "type": "string",
+      "format": "date",
+      "description": "User's date of birth"
     },
     "role": {
       "type": "string",
-      "enum": ["customer", "admin", "merchant"],
-      "description": "The user's role in the system."
+      "enum": ["customer", "admin", "seller"],
+      "description": "User's role in the system"
     },
-    "addresses": {
-      "type": "array",
-      "items": {
-        "$ref": "address.json"
-      },
-      "description": "The user's addresses.",
-      "minItems": 1
+    "profilePicture": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to user's profile picture",
+      "maxLength": 2083
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "newsletter": { "type": "boolean" },
+        "twoFactorAuth": { "type": "boolean" },
+        "language": {
+          "type": "string",
+          "enum": ["en", "es", "fr", "de", "ja"],
+          "maxLength": 2
+        }
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of account creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last account update"
     }
   },
-  "required": ["userId", "username", "email", "fullName", "role"]
+  "required": ["userId", "username", "email", "passwordHash", "fullName", "role", "createdAt", "updatedAt"]
 }
-{
-  "$id": "address.json",
-  "type": "object",
-  "properties": {
-    "street": {
-      "type": "string",
-      "description": "The street name and number.",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "city": {
-      "type": "string",
-      "description": "The city name.",
-      "minLength": 1,
-      "maxLength": 50
-    },
-    "state": {
-      "type": "string",
-      "description": "The state or province name.",
-      "minLength": 1,
-      "maxLength": 50
-    },
-    "postalCode": {
-      "type": "string",
-      "description": "The postal code.",
-      "pattern": "^[0-9]{5}(-[0-9]{4})?$"
-    },
-    "country": {
-      "type": "string",
-      "description": "The country name.",
-      "minLength": 1,
-      "maxLength": 50
-    }
-  },
-  "required": ["street", "city", "state", "postalCode", "country"]
-}
+
 {
   "$id": "product.json",
   "type": "object",
@@ -82,41 +84,84 @@
     "productId": {
       "type": "string",
       "format": "uuid",
-      "description": "The unique identifier for a product."
+      "description": "Unique identifier for the product",
+      "maxLength": 36
     },
     "name": {
       "type": "string",
-      "description": "The name of the product.",
-      "minLength": 1,
-      "maxLength": 100
+      "description": "Product name",
+      "maxLength": 200
     },
     "description": {
       "type": "string",
-      "description": "The description of the product."
+      "description": "Detailed product description",
+      "maxLength": 5000
+    },
+    "sku": {
+      "type": "string",
+      "description": "Stock Keeping Unit",
+      "maxLength": 50
     },
     "price": {
-      "$ref": "money.json",
-      "description": "The price of the product."
+      "type": "number",
+      "description": "Product price",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "GBP", "JPY"],
+      "description": "Currency for the price",
+      "maxLength": 3
     },
     "category": {
-      "type": "string",
-      "description": "The category of the product."
+      "$ref": "category.json"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "description": "Product tags for easier searching"
     },
     "inventory": {
       "type": "integer",
-      "description": "The number of items in stock.",
+      "description": "Current inventory count",
       "minimum": 0
     },
-    "ratings": {
+    "brand": {
+      "type": "string",
+      "description": "Product brand",
+      "maxLength": 100
+    },
+    "images": {
       "type": "array",
       "items": {
-        "$ref": "rating.json"
+        "$ref": "image.json"
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 255
       },
-      "description": "The ratings for this product."
+      "description": "Additional product attributes"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of product creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last product update"
     }
   },
-  "required": ["productId", "name", "price", "category", "inventory"]
+  "required": ["productId", "name", "description", "price", "currency", "category", "inventory", "createdAt", "updatedAt"]
 }
+
 {
   "$id": "order.json",
   "type": "object",
@@ -124,101 +169,568 @@
     "orderId": {
       "type": "string",
       "format": "uuid",
-      "description": "The unique identifier for an order."
+      "description": "Unique identifier for the order",
+      "maxLength": 36
     },
-    "user": {
-      "$ref": "user.json",
-      "description": "The user who placed the order."
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user who placed the order",
+      "maxLength": 36
     },
     "items": {
       "type": "array",
       "items": {
         "$ref": "orderItem.json"
-      },
-      "description": "The items in the order.",
-      "minItems": 1
+      }
     },
     "totalAmount": {
-      "$ref": "money.json",
-      "description": "The total amount of the order."
-    },
-    "shippingAddress": {
-      "$ref": "address.json",
-      "description": "The shipping address for the order."
-    },
-    "status": {
-      "type": "string",
-      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
-      "description": "The current status of the order."
-    },
-    "orderDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "The date and time when the order was placed."
-    }
-  },
-  "required": ["orderId", "user", "items", "totalAmount", "shippingAddress", "status", "orderDate"]
-}
-{
-  "$id": "money.json",
-  "type": "object",
-  "properties": {
-    "amount": {
       "type": "number",
-      "description": "The monetary amount.",
+      "description": "Total order amount",
       "minimum": 0
     },
     "currency": {
       "type": "string",
-      "enum": ["USD", "EUR", "JPY"],
-      "description": "The currency of the amount."
+      "enum": ["USD", "EUR", "GBP", "JPY"],
+      "description": "Currency for the order",
+      "maxLength": 3
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
+      "description": "Current status of the order"
+    },
+    "shippingAddress": {
+      "$ref": "address.json"
+    },
+    "billingAddress": {
+      "$ref": "address.json"
+    },
+    "paymentMethod": {
+      "type": "string",
+      "enum": ["credit_card", "paypal", "bank_transfer"],
+      "description": "Payment method used",
+      "maxLength": 20
+    },
+    "shippingMethod": {
+      "type": "string",
+      "description": "Shipping method chosen",
+      "maxLength": 100
+    },
+    "trackingNumber": {
+      "type": "string",
+      "description": "Shipping tracking number",
+      "maxLength": 100
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional order notes",
+      "maxLength": 1000
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of order creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last order update"
     }
   },
-  "required": ["amount", "currency"]
+  "required": ["orderId", "userId", "items", "totalAmount", "currency", "status", "shippingAddress", "createdAt", "updatedAt"]
 }
+
 {
-  "$id": "rating.json",
+  "$id": "review.json",
   "type": "object",
   "properties": {
-    "user": {
-      "$ref": "user.json",
-      "description": "The user who provided the rating."
+    "reviewId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the review",
+      "maxLength": 36
     },
-    "score": {
+    "productId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the reviewed product",
+      "maxLength": 36
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user who wrote the review",
+      "maxLength": 36
+    },
+    "rating": {
       "type": "integer",
       "minimum": 1,
       "maximum": 5,
-      "description": "The rating score (1-5)."
+      "description": "Product rating (1-5 stars)"
     },
-    "comment": {
+    "title": {
       "type": "string",
-      "description": "The comment associated with the rating."
+      "description": "Review title",
+      "maxLength": 200
     },
-    "date": {
+    "content": {
+      "type": "string",
+      "description": "Review content",
+      "maxLength": 2000
+    },
+    "helpfulVotes": {
+      "type": "integer",
+      "description": "Number of helpful votes",
+      "minimum": 0
+    },
+    "verifiedPurchase": {
+      "type": "boolean",
+      "description": "Indicates if the review is from a verified purchase"
+    },
+    "createdAt": {
       "type": "string",
       "format": "date-time",
-      "description": "The date and time when the rating was submitted."
+      "description": "Timestamp of review creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last review update"
     }
   },
-  "required": ["user", "score", "date"]
+  "required": ["reviewId", "productId", "userId", "rating", "content", "createdAt", "updatedAt"]
+}
+
+{
+  "$id": "category.json",
+  "type": "object",
+  "properties": {
+    "categoryId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the category",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "Category name",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "Category description",
+      "maxLength": 500
+    },
+    "parentCategoryId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the parent category, if any",
+      "maxLength": 36
+    },
+    "level": {
+      "type": "integer",
+      "description": "Depth level of the category in the hierarchy",
+      "minimum": 1
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "Indicates if the category is active"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of category creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last category update"
+    }
+  },
+  "required": ["categoryId", "name", "level", "isActive", "createdAt", "updatedAt"]
+}
+
+{
+  "$id": "address.json",
+  "type": "object",
+  "properties": {
+    "addressId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the address",
+      "maxLength": 36
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user associated with this address",
+      "maxLength": 36
+    },
+    "type": {
+      "type": "string",
+      "enum": ["shipping", "billing"],
+      "description": "Type of address"
+    },
+    "firstName": {
+      "type": "string",
+      "description": "First name for the address",
+      "maxLength": 50
+    },
+    "lastName": {
+      "type": "string",
+      "description": "Last name for the address",
+      "maxLength": 50
+    },
+    "company": {
+      "type": "string",
+      "description": "Company name, if applicable",
+      "maxLength": 100
+    },
+    "streetAddress1": {
+      "type": "string",
+      "description": "Street address, first line",
+      "maxLength": 100
+    },
+    "streetAddress2": {
+      "type": "string",
+      "description": "Street address, second line",
+      "maxLength": 100
+    },
+    "city": {
+      "type": "string",
+      "description": "City name",
+      "maxLength": 100
+    },
+    "state": {
+      "type": "string",
+      "description": "State or province name",
+      "maxLength": 100
+    },
+    "postalCode": {
+      "type": "string",
+      "description": "Postal or ZIP code",
+      "maxLength": 20
+    },
+    "country": {
+      "type": "string",
+      "description": "Country name",
+      "maxLength": 100
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "Phone number associated with this address",
+      "maxLength": 20
+    },
+    "isDefault": {
+      "type": "boolean",
+      "description": "Indicates if this is the default address for the user"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of address creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last address update"
+    }
+  },
+  "required": ["addressId", "userId", "type", "firstName", "lastName", "streetAddress1", "city", "postalCode", "country", "createdAt", "updatedAt"]
 }
 {
   "$id": "orderItem.json",
   "type": "object",
   "properties": {
-    "product": {
-      "$ref": "product.json",
-      "description": "The product in the order."
+    "orderItemId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the order item",
+      "maxLength": 36
+    },
+    "orderId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the associated order",
+      "maxLength": 36
+    },
+    "productId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the product",
+      "maxLength": 36
     },
     "quantity": {
       "type": "integer",
-      "minimum": 1,
-      "description": "The quantity of the product ordered."
+      "description": "Quantity of the product ordered",
+      "minimum": 1
     },
-    "price": {
-      "$ref": "money.json",
-      "description": "The price of the product at the time of order."
+    "unitPrice": {
+      "type": "number",
+      "description": "Price per unit of the product at the time of order",
+      "minimum": 0
+    },
+    "totalPrice": {
+      "type": "number",
+      "description": "Total price for this item (quantity * unitPrice)",
+      "minimum": 0
+    },
+    "discountAmount": {
+      "type": "number",
+      "description": "Discount amount applied to this item",
+      "minimum": 0
+    },
+    "notes": {
+      "type": "string",
+      "description": "Any additional notes for this item",
+      "maxLength": 500
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of order item creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last order item update"
     }
   },
-  "required": ["product", "quantity", "price"]
+  "required": ["orderItemId", "orderId", "productId", "quantity", "unitPrice", "totalPrice", "createdAt", "updatedAt"]
+}
+
+{
+  "$id": "image.json",
+  "type": "object",
+  "properties": {
+    "imageId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the image",
+      "maxLength": 36
+    },
+    "entityType": {
+      "type": "string",
+      "enum": ["product", "user", "category"],
+      "description": "Type of entity this image is associated with"
+    },
+    "entityId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the associated entity",
+      "maxLength": 36
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL of the image",
+      "maxLength": 2083
+    },
+    "altText": {
+      "type": "string",
+      "description": "Alternative text for the image",
+      "maxLength": 255
+    },
+    "width": {
+      "type": "integer",
+      "description": "Width of the image in pixels",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "description": "Height of the image in pixels",
+      "minimum": 1
+    },
+    "size": {
+      "type": "integer",
+      "description": "Size of the image in bytes",
+      "minimum": 1
+    },
+    "sortOrder": {
+      "type": "integer",
+      "description": "Sort order of the image",
+      "minimum": 0
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of image creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last image update"
+    }
+  },
+  "required": ["imageId", "entityType", "entityId", "url", "createdAt", "updatedAt"]
+}
+
+{
+  "$id": "cart.json",
+  "type": "object",
+  "properties": {
+    "cartId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the cart",
+      "maxLength": 36
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user who owns this cart",
+      "maxLength": 36
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "cartItem.json"
+      }
+    },
+    "totalAmount": {
+      "type": "number",
+      "description": "Total amount of all items in the cart",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "GBP", "JPY"],
+      "description": "Currency for the cart total",
+      "maxLength": 3
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of cart creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last cart update"
+    }
+  },
+  "required": ["cartId", "userId", "items", "totalAmount", "currency", "createdAt", "updatedAt"]
+}
+
+{
+  "$id": "cartItem.json",
+  "type": "object",
+  "properties": {
+    "cartItemId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the cart item",
+      "maxLength": 36
+    },
+    "cartId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the associated cart",
+      "maxLength": 36
+    },
+    "productId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the product",
+      "maxLength": 36
+    },
+    "quantity": {
+      "type": "integer",
+      "description": "Quantity of the product in the cart",
+      "minimum": 1
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the item was added to the cart"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last cart item update"
+    }
+  },
+  "required": ["cartItemId", "cartId", "productId", "quantity", "addedAt", "updatedAt"]
+}
+
+{
+  "$id": "wishlist.json",
+  "type": "object",
+  "properties": {
+    "wishlistId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the wishlist",
+      "maxLength": 36
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user who owns this wishlist",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the wishlist",
+      "maxLength": 100
+    },
+    "isPublic": {
+      "type": "boolean",
+      "description": "Indicates if the wishlist is public or private"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "wishlistItem.json"
+      }
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of wishlist creation"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last wishlist update"
+    }
+  },
+  "required": ["wishlistId", "userId", "name", "isPublic", "createdAt", "updatedAt"]
+}
+
+{
+  "$id": "wishlistItem.json",
+  "type": "object",
+  "properties": {
+    "wishlistItemId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for the wishlist item",
+      "maxLength": 36
+    },
+    "wishlistId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the associated wishlist",
+      "maxLength": 36
+    },
+    "productId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the product",
+      "maxLength": 36
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the item was added to the wishlist"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes for the wishlist item",
+      "maxLength": 500
+    }
+  },
+  "required": ["wishlistItemId", "wishlistId", "productId", "addedAt"]
 }
