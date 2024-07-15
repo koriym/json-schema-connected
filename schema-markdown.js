@@ -61,7 +61,7 @@ function jsonSchemaToMarkdown(schema, baseDir, isSubSchema = false, seenSchemas 
     return md;
 }
 
-function generateFullMarkdown(schemas, baseDir) {
+function convertJsonSchemasToMarkdowns(schemas, baseDir) {
     let fullMd = '';
     const processedSchemas = new Set();
 
@@ -79,7 +79,7 @@ function generateFullMarkdown(schemas, baseDir) {
 if (typeof window !== 'undefined') {
     window.schemaMarkdown = {
         jsonSchemaToMarkdown,
-        generateFullMarkdown
+        convertJsonSchemasToMarkdowns
     };
 }
 
@@ -87,6 +87,6 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         jsonSchemaToMarkdown,
-        generateFullMarkdown
+        convertJsonSchemasToMarkdowns
     };
 }

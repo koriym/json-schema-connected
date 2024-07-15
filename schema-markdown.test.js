@@ -1,4 +1,4 @@
-const { jsonSchemaToMarkdown, generateFullMarkdown } = require('./schema-markdown');
+const { jsonSchemaToMarkdown, convertJsonSchemasToMarkdowns } = require('./schema-markdown');
 
 describe('JSON Schema to Markdown Converter', () => {
     const schemaRegistry = {};
@@ -45,7 +45,7 @@ describe('JSON Schema to Markdown Converter', () => {
         expect(result.trim()).toBe(expectedMarkdown);
     });
 
-    test('generateFullMarkdown should generate correct markdown for multiple schemas', () => {
+    test('convertJsonSchemasToMarkdowns should generate correct markdown for multiple schemas', () => {
         const expectedMarkdown = `## customer
 
 | Property | Type    | Description | Required | Constraints |
@@ -64,7 +64,7 @@ describe('JSON Schema to Markdown Converter', () => {
 | city | string | City name | Yes |  |
 | zipCode | string | Zip code | No | pattern: ^\\d{5}$ |`;
 
-        const result = generateFullMarkdown(Object.values(schemaRegistry), '');
+        const result = convertJsonSchemasToMarkdowns(Object.values(schemaRegistry), '');
         expect(result.trim()).toBe(expectedMarkdown);
     });
 
@@ -80,7 +80,7 @@ describe('JSON Schema to Markdown Converter', () => {
         expect(result.trim()).toBe(expectedMarkdown.trim());
     });
 
-    test('generateFullMarkdown should handle circular references', () => {
+    test('convertJsonSchemasToMarkdowns should handle circular references', () => {
         schemaRegistry['circular1.json'] = {
             $id: 'circular1.json',
             type: 'object',
@@ -110,7 +110,7 @@ describe('JSON Schema to Markdown Converter', () => {
 |----------|---------|-------------|----------|-------------|
 | ref1 | object | Embedded: [circular1](#circular1) | No | |`;
 
-        const result = generateFullMarkdown([schemaRegistry['circular1.json'], schemaRegistry['circular2.json']], '');
+        const result = convertJsonSchemasToMarkdowns([schemaRegistry['circular1.json'], schemaRegistry['circular2.json']], '');
         expect(result.trim()).toBe(expectedMarkdown);
     });
 });
