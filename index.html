@@ -75,7 +75,7 @@
 </div>
 <p>
   Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape, SQL, or Markdown.
-  See more <a href="#" id="exampleLink" onclick="switchExample(); return false;">[example]</a>
+  See more <a href="#" id="exampleLink" onclick="switchExample(); return false;">example. &#8634;</a>
 </p>
 <div>
   <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
@@ -167,6 +167,7 @@
       document.getElementById('result').textContent = markdown;
       document.getElementById('preview').innerHTML = marked(markdown);
       showPreviewToggle();
+      toggleView('preview');
     } catch (error) {
       console.error('Error converting schemas to Markdown:', error);
     }
@@ -207,7 +208,7 @@
     toggleView('raw');
   }
 
-  let currentView = 'preview';
+  let currentView = 'raw';
   function toggleView(view) {
     if (view === currentView) return;
 
