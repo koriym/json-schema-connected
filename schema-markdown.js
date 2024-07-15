@@ -38,7 +38,7 @@ function jsonSchemaToMarkdown(schema, baseDir, isSubSchema = false, seenSchemas 
     }
     seenSchemas.add(schemaId);
 
-    let md = isSubSchema ? '' : `## ${schemaId}\n\n`;
+    let md = isSubSchema ? '' : `## ${schemaId.replace('.json', '')}\n\n`;
 
     if (schema.properties) {
         md += '| Property | Type    | Description | Required | Constraints |\n';
@@ -47,7 +47,7 @@ function jsonSchemaToMarkdown(schema, baseDir, isSubSchema = false, seenSchemas 
         for (let [key, value] of Object.entries(schema.properties)) {
             if (value.$ref) {
                 const refSchemaId = value.$ref.replace('.json', '');
-                md += `| ${key} | [object](#schema-${refSchemaId})  | Embedded: [${refSchemaId}](#schema-${refSchemaId}) | ${(schema.required && schema.required.includes(key)) ? 'Yes' : 'No'} | |\n`;
+                md += `| ${key} | object | Embedded: [${refSchemaId}](#${refSchemaId}) | ${(schema.required && schema.required.includes(key)) ? 'Yes' : 'No'} | |\n`;
             } else {
                 const type = value.type || 'object';
                 const description = value.description || '';
