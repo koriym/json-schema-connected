@@ -44,7 +44,7 @@ npm install
 The Array Shape Generator creates a sample array based on your JSON Schema.
 
 ```javascript
-const { generateArrayShape } = require('./array-shape');
+const { jsonSchemasToArrayShape } = require('./schema-array-shape');
 
 const schema = {
   type: 'object',
@@ -54,7 +54,7 @@ const schema = {
   }
 };
 
-const arrayShape = generateArrayShape(schema);
+const arrayShape = jsonSchemasToArrayShape(schema);
 console.log(arrayShape);
 ```
 
@@ -63,7 +63,7 @@ console.log(arrayShape);
 The SQL Schema Generator creates SQL `CREATE TABLE` statements from your JSON Schema.
 
 ```javascript
-const { jsonSchemaToCreateTable, convertJsonSchemasToCreateTables } = require('./sql-schema');
+const { jsonSchemaToCreateTable, convertJsonSchemasToCreateTables } = require('./schema-sql');
 
 // For a single schema
 const singleSchema = { /* your JSON schema here */ };
@@ -81,7 +81,7 @@ console.log(allSql);
 The Markdown Documentation Generator creates readable documentation from your JSON Schema.
 
 ```javascript
-const { jsonSchemaToMarkdown, generateFullMarkdown } = require('./schema-markdown');
+const { jsonSchemaToMarkdown, convertJsonSchemasToMarkdowns } = require('./schema-markdown');
 
 // For a single schema
 const singleSchema = { /* your JSON schema here */ };
@@ -90,33 +90,9 @@ console.log(markdown);
 
 // For multiple schemas
 const multipleSchemas = [ /* array of JSON schemas */ ];
-const fullMarkdown = generateFullMarkdown(multipleSchemas, __dirname);
+const fullMarkdown = convertJsonSchemasToMarkdowns(multipleSchemas, __dirname);
 console.log(fullMarkdown);
 ```
-
-## API Reference
-
-### Array Shape Generator
-
-- `generateArrayShape(schema: object): array`
-  Generates a sample array based on the provided JSON Schema.
-
-### SQL Schema Generator
-
-- `jsonSchemaToCreateTable(schema: object, tableName: string): string`
-  Generates a SQL CREATE TABLE statement for a single JSON Schema.
-
-- `convertJsonSchemasToCreateTables(schemas: string): string`
-  Generates SQL CREATE TABLE statements for multiple JSON Schemas.
-
-### Markdown Documentation Generator
-
-- `jsonSchemaToMarkdown(schema: object, baseDir: string): string`
-  Generates Markdown documentation for a single JSON Schema.
-
-- `generateFullMarkdown(schemas: array, baseDir: string): string`
-  Generates Markdown documentation for multiple JSON Schemas.
-
 ## Examples
 
 Here are some practical examples demonstrating how to use the JSON Schema Utilities in various scenarios:
@@ -127,8 +103,8 @@ This example shows how to use all three utilities with a simple JSON Schema:
 
 ```javascript
 const fs = require('fs');
-const { generateArrayShape } = require('./array-shape');
-const { jsonSchemaToCreateTable } = require('./sql-schema');
+const { jsonSchemasToArrayShape } = require('./schema-array-shape');
+const { jsonSchemaToCreateTable } = require('./schema-sql');
 const { jsonSchemaToMarkdown } = require('./schema-markdown');
 
 // Define a simple JSON Schema
@@ -157,7 +133,7 @@ const schema = {
 
 // Generate array shape
 console.log("Array Shape:");
-console.log(JSON.stringify(generateArrayShape(schema), null, 2));
+console.log(JSON.stringify(jsonSchemasToArrayShape(schema), null, 2));
 
 // Generate SQL
 console.log("\nSQL Create Table Statement:");
@@ -168,76 +144,14 @@ console.log("\nMarkdown Documentation:");
 console.log(jsonSchemaToMarkdown(schema, __dirname));
 ```
 
-### 2. Working with Multiple Schemas
-
-This example demonstrates how to work with multiple interconnected schemas:
-
-```javascript
-const { convertJsonSchemasToCreateTables } = require('./sql-schema');
-const { generateFullMarkdown } = require('./schema-markdown');
-
-// Define multiple schemas
-const schemas = [
-  {
-    "$id": "https://example.com/person.schema.json",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Person",
-    "type": "object",
-    "properties": {
-      "id": {
-        "type": "integer",
-        "description": "The unique identifier for a person"
-      },
-      "name": {
-        "type": "string",
-        "description": "The person's full name"
-      },
-      "address": {
-        "$ref": "https://example.com/address.schema.json"
-      }
-    },
-    "required": ["id", "name"]
-  },
-  {
-    "$id": "https://example.com/address.schema.json",
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Address",
-    "type": "object",
-    "properties": {
-      "street": {
-        "type": "string",
-        "description": "The street address"
-      },
-      "city": {
-        "type": "string",
-        "description": "The city name"
-      },
-      "country": {
-        "type": "string",
-        "description": "The country name"
-      }
-    },
-    "required": ["street", "city", "country"]
-  }
-];
-
-// Generate SQL for all schemas
-console.log("SQL Create Table Statements:");
-console.log(convertJsonSchemasToCreateTables(JSON.stringify(schemas)));
-
-// Generate full Markdown documentation
-console.log("\nFull Markdown Documentation:");
-console.log(generateFullMarkdown(schemas, __dirname));
-```
-
-### 3. Integrating with a Web Application
+### 2. Integrating with a Web Application
 
 This example shows how you might integrate these utilities into a simple Express.js web application:
 
 ```javascript
 const express = require('express');
-const { generateArrayShape } = require('./array-shape');
-const { jsonSchemaToCreateTable } = require('./sql-schema');
+const { jsonSchemasToArrayShape } = require('./schema-array-shape');
+const { jsonSchemaToCreateTable } = require('./schema-sql');
 const { jsonSchemaToMarkdown } = require('./schema-markdown');
 
 const app = express();
@@ -246,7 +160,7 @@ app.use(express.json());
 app.post('/generate', (req, res) => {
   const schema = req.body;
   
-  const arrayShape = generateArrayShape(schema);
+  const arrayShape = jsonSchemasToArrayShape(schema);
   const sqlStatement = jsonSchemaToCreateTable(schema, 'generated_table');
   const markdown = jsonSchemaToMarkdown(schema, __dirname);
 
