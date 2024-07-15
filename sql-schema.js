@@ -35,7 +35,7 @@ function getColumnType(property) {
             case "boolean": return "BOOLEAN";
             case "array": return "JSON";
             case "object": return "JSON";
-            default: return "VARCHAR";
+            default: return "VARCHAR(255)";
         }
     }
 }
