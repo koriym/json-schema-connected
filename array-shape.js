@@ -14,18 +14,10 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function jsonSchemaToArrayShape(schema, baseUrl, schemaName, visited = new Set()) {
+function jsonSchemaToArrayShape(schema, schemaName) {
     if (typeof schema !== 'object' || schema === null) {
         return 'undefined';
     }
-
-    const schemaId = schema.$id || baseUrl;
-    if (visited.has(schemaId)) {
-        return capitalizeFirstLetter(getSchemaName(schema, schemaName));
-    }
-    visited.add(schemaId);
-
-    let shape = {};
 
     if (schema.$ref) {
         const refParts = schema.$ref.split('/');
@@ -33,35 +25,30 @@ function jsonSchemaToArrayShape(schema, baseUrl, schemaName, visited = new Set()
         return capitalizeFirstLetter(refName);
     }
 
-    if (schema.type) {
-        if (schema.type === 'object' && schema.properties) {
-            for (let key in schema.properties) {
-                shape[key] = jsonSchemaToArrayShape(schema.properties[key], baseUrl, key, new Set(visited));
-            }
-        } else if (schema.type === 'array' && schema.items) {
-            const itemSchemaName = getSchemaName(schema.items, `${schemaName}Item`);
-            shape = `array<${jsonSchemaToArrayShape(schema.items, baseUrl, itemSchemaName, new Set(visited))}>`;
-        } else if (schema.type === 'string') {
-            shape = 'string';
-        } else if (schema.type === 'number' || schema.type === 'integer') {
-            shape = 'int';
-        } else if (schema.type === 'boolean') {
-            shape = 'bool';
-        } else if (schema.type === 'null') {
-            shape = 'null';
+    if (schema.type === 'object' && schema.properties) {
+        let shape = {};
+        for (let key in schema.properties) {
+            shape[key] = jsonSchemaToArrayShape(schema.properties[key], key);
         }
-    } else {
-        // If type is not specified, treat it as an object
-        shape = capitalizeFirstLetter(getSchemaName(schema, schemaName));
-    }
-
-    if (typeof shape === 'object') {
         let shapeString = 'array{';
         shapeString += Object.keys(shape).map(key => `${key}:${shape[key]}`).join(',');
         shapeString += '}';
         return shapeString;
+    } else if (schema.type === 'array' && schema.items) {
+        const itemSchemaName = getSchemaName(schema.items, `${schemaName}Item`);
+        return `array<${jsonSchemaToArrayShape(schema.items, itemSchemaName)}>`;
+    } else if (schema.type === 'string') {
+        return 'string';
+    } else if (schema.type === 'number') {
+        return 'float';
+    } else if (schema.type === 'integer') {
+        return 'int';
+    } else if (schema.type === 'boolean') {
+        return 'bool';
+    } else if (schema.type === 'null') {
+        return 'null';
     } else {
-        return shape;
+        return capitalizeFirstLetter(getSchemaName(schema, schemaName));
     }
 }
 
@@ -96,10 +83,9 @@ function convertJsonSchemasToArrayShapes(jsonSchemasText) {
         registerJsonSchema(schema.$id || schema.title || 'unnamed_schema', schema);
     });
 
-    const baseUrl = '';
     return schemas.map(schema => {
         const schemaName = getSchemaName(schema, 'UnnamedSchema');
-        return jsonSchemaToArrayShape(schema, baseUrl, schemaName, new Set());
+        return jsonSchemaToArrayShape(schema, schemaName);
     });
 }
 
