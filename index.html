@@ -87,15 +87,14 @@
   <button onclick="convertJsonSchemasToSQL()" aria-label="Convert JSON Schemas to SQL">Convert to SQL</button>
   <button onclick="convertJsonSchemasToMarkdown()" aria-label="Convert JSON Schemas to Markdown">Convert to Markdown</button>
 </div>
+<div id="toggleContainer" style="display: none;">
+  <span id="option1Toggle" class="preview-toggle active" onclick="toggleView('option1')">option1</span>
+  |
+  <span id="option2Toggle" class="preview-toggle" onclick="toggleView('option2')">option2</span>
+</div>
 <div>
-  <div id="toggleContainer" style="display: none;">
-    <span id="option1Toggle" class="preview-toggle active" onclick="toggleView('option1')">option1</span>
-    |
-    <span id="option2Toggle" class="preview-toggle" onclick="toggleView('option2')">option2</span>
-  </div>
-  <label for="result" class="sr-only">Result:</label>
   <pre id="result"></pre>
-  <pre id="option2Content" style="display: none;"></pre>
+  <div id="option2Content" class="preview-content" style="display: none;"></div>
 </div>
 
 <script src="array-shape.js"></script>
@@ -139,8 +138,8 @@
       document.getElementById('result').textContent = flatResult;
 
       const indentedResult = arrayShapes.map(shape => indentArrayShape(shape)).join('\n\n');
-      document.getElementById('option2Content').textContent = indentedResult;
-
+      document.getElementById('option2Content').innerHTML = `<pre>${indentedResult}</pre>`;
+      document.getElementById('option2Content').classList.remove('preview-content');
       showToggle('flat', 'indented');
     } catch (error) {
       console.error('Error converting schemas to array shapes:', error);
@@ -169,10 +168,10 @@
       const schemas = await loadAndRegisterSchemas(schemaTexts);
       const baseDir = '';
       const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
-      document.getElementById('result').textContent = markdown;
       document.getElementById('option2Content').innerHTML = marked(markdown);
+      document.getElementById('option2Content').classList.add('preview-content');
       showToggle('raw', 'preview');
-      toggleView('option2');  // 初期表示をpreviewに設定
+      toggleView('option2');
     } catch (error) {
       console.error('Error converting schemas to Markdown:', error);
     }
@@ -243,9 +242,7 @@
   function indentArrayShape(shape) {
     return shape.replace(/,/g, ',\n  ')
             .replace(/{/g, '{\n  ')
-            .replace(/}/g, '\n}')
-            .replace(/</g, '<\n  ')
-            .replace(/>/g, '\n>');
+            .replace(/}/g, '\n}');
   }
 
   // サンプル切り替え用
@@ -254,7 +251,6 @@
     'examples/medium_schema.json.txt',
     'examples/complex_schema.json.txt',
     'examples/japanese_schema.json.txt',
-    // 必要に応じて追加のサンプルファイルを追加
   ];
   let currentExampleIndex = -1;
 
