@@ -12,22 +12,23 @@
       display: flex;
       align-items: center;
     }
-    textarea, pre {
+    textarea, pre, .preview-content {
       width: 100%;
       margin-bottom: 10px;
+      overflow: auto;
+    }
+    textarea, pre {
       resize: none;
-      overflow: hidden;
     }
     button {
       padding: 10px 20px;
       font-size: 16px;
       margin-right: 10px;
     }
-    pre {
+    pre, .preview-content {
       background-color: #f4f4f4;
       padding: 10px;
       border: 1px solid #ddd;
-      overflow-x: auto;
     }
     .sr-only {
       position: absolute;
@@ -39,59 +40,48 @@
       clip: rect(0, 0, 0, 0);
       border: 0;
     }
+    .preview-toggle {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+    .preview-toggle.active {
+      text-decoration: none;
+      color: black;
+    }
+    .preview-content {
+      display: none;
+    }
+    .preview-content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 1em;
+    }
+    .preview-content th, .preview-content td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .preview-content th {
+      background-color: #f2f2f2;
+    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/2.0.3/marked.min.js"></script>
 </head>
 <body>
 <div class="header">
   <img src="images/json-schema-connected.png" width="150px" alt="logo">
   <h1>json-schema-connected Converter</h1>
 </div>
-<p>Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape, SQL, or Markdown.</p>
+<p>
+  Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape, SQL, or Markdown.
+  See more <a href="#" id="exampleLink" onclick="switchExample(); return false;">[example]</a>
+</p>
 <div>
   <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
   <textarea id="jsonSchemas" rows="10" cols="50" oninput="autoResize(this)">
-{
-  "$id": "customer.json",
-  "type": "object",
-  "properties": {
-    "customerId": {
-      "type": "integer",
-      "description": "The unique identifier for a customer.",
-      "minimum": 1
-    },
-    "name": {
-      "type": "string",
-      "description": "The name of the customer.",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "address": {
-      "$ref": "address.json",
-      "description": "The address of the customer."
-    }
-  },
-  "required": ["customerId", "name", "address"]
-}
-{
-  "$id": "address.json",
-  "type": "object",
-  "properties": {
-    "street": {
-      "type": "string",
-      "description": "The street name and number.",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "city": {
-      "type": "string",
-      "description": "The city name.",
-      "minLength": 1,
-      "maxLength": 50
-    }
-  },
-  "required": ["street", "city"]
-}
-</textarea>
+    <!-- デフォルトの簡単なスキーマをここに配置 -->
+  </textarea>
 </div>
 <div>
   <button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert to Array Shape</button>
@@ -101,6 +91,12 @@
 <div>
   <label for="result" class="sr-only">Result:</label>
   <pre id="result"></pre>
+  <div class="preview-content" id="preview"></div>
+  <div id="previewToggleContainer" style="display: none;">
+    <span id="rawToggle" class="preview-toggle active" onclick="toggleView('raw')">raw</span>
+    |
+    <span id="previewToggle" class="preview-toggle" onclick="toggleView('preview')">preview</span>
+  </div>
 </div>
 
 <script src="array-shape.js"></script>
@@ -108,37 +104,75 @@
 <script src="schema-markdown.js"></script>
 <script>
   function autoResize(textarea) {
-    textarea.style.height = 'auto'; // Reset the height
-    textarea.style.height = textarea.scrollHeight + 'px'; // Set the height to the scroll height
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
   }
 
-  // Initial resize
   document.addEventListener("DOMContentLoaded", function() {
     const textarea = document.getElementById('jsonSchemas');
     autoResize(textarea);
   });
 
-  function convertJsonSchemasToArrayShapes() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
-    document.getElementById('result').textContent = arrayShapes.join('\n');
+  function registerSchemas(schemas) {
+    schemas.forEach(schema => {
+      if (schema.$id) {
+        window.schemaRegistry[schema.$id] = schema;
+      } else {
+        console.error('Schema missing $id:', schema);
+      }
+    });
   }
 
-  function convertJsonSchemasToSQL() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
-    document.getElementById('result').textContent = createTableSQL;
+  async function loadAndRegisterSchemas(schemaTexts) {
+    const schemas = schemaTexts.map(text => JSON.parse(text.trim()));
+    registerSchemas(schemas);
+    return schemas;
   }
 
-  function convertJsonSchemasToMarkdown() {
+  async function convertJsonSchemasToArrayShapes() {
     const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
-    const baseDir = '';  // ベースディレクトリの指定
-    const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
-    document.getElementById('result').textContent = markdown;
+    const schemaTexts = extractJsonSchemas(jsonSchemasText);
+
+    try {
+      await loadAndRegisterSchemas(schemaTexts);
+      const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
+      document.getElementById('result').textContent = arrayShapes.join('\n');
+      hidePreviewToggle();
+    } catch (error) {
+      console.error('Error converting schemas to array shapes:', error);
+    }
   }
 
-  // JSONスキーマを抽出する関数
+  async function convertJsonSchemasToSQL() {
+    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+    const schemaTexts = extractJsonSchemas(jsonSchemasText);
+
+    try {
+      await loadAndRegisterSchemas(schemaTexts);
+      const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
+      document.getElementById('result').textContent = createTableSQL;
+      hidePreviewToggle();
+    } catch (error) {
+      console.error('Error converting schemas to SQL:', error);
+    }
+  }
+
+  async function convertJsonSchemasToMarkdown() {
+    const jsonSchemasText = document.getElementById('jsonSchemas').value;
+    const schemaTexts = extractJsonSchemas(jsonSchemasText);
+
+    try {
+      const schemas = await loadAndRegisterSchemas(schemaTexts);
+      const baseDir = '';
+      const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
+      document.getElementById('result').textContent = markdown;
+      document.getElementById('preview').innerHTML = marked(markdown);
+      showPreviewToggle();
+    } catch (error) {
+      console.error('Error converting schemas to Markdown:', error);
+    }
+  }
+
   function extractJsonSchemas(text) {
     const jsonSchemas = [];
     let stack = [];
@@ -163,14 +197,63 @@
     return jsonSchemas;
   }
 
-  // JSONスキーマのレジストリを初期化
   window.schemaRegistry = {};
+
+  function showPreviewToggle() {
+    document.getElementById('previewToggleContainer').style.display = 'block';
+  }
+
+  function hidePreviewToggle() {
+    document.getElementById('previewToggleContainer').style.display = 'none';
+    toggleView('raw');
+  }
+
+  let currentView = 'raw';
+  function toggleView(view) {
+    if (view === currentView) return;
+
+    const rawContent = document.getElementById('result');
+    const previewContent = document.getElementById('preview');
+    const rawToggle = document.getElementById('rawToggle');
+    const previewToggle = document.getElementById('previewToggle');
+
+    if (view === 'raw') {
+      rawContent.style.display = 'block';
+      previewContent.style.display = 'none';
+      rawToggle.classList.add('active');
+      previewToggle.classList.remove('active');
+    } else {
+      rawContent.style.display = 'none';
+      previewContent.style.display = 'block';
+      rawToggle.classList.remove('active');
+      previewToggle.classList.add('active');
+    }
+    currentView = view;
+  }
+
+  // 新しい関数: サンプル切り替え用
+  const examples = [
+    'examples/simple_schema.json.txt',
+    'examples/medium_schema.json.txt',
+    'examples/complex_schema.json.txt',
+    // 必要に応じて追加のサンプルファイルを追加
+  ];
+  let currentExampleIndex = -1;
+
+  function switchExample() {
+    currentExampleIndex = (currentExampleIndex + 1) % examples.length;
+    fetch(examples[currentExampleIndex])
+            .then(response => response.text())
+            .then(data => {
+              document.getElementById('jsonSchemas').value = data;
+              autoResize(document.getElementById('jsonSchemas'));
+            })
+            .catch(error => console.error('Error loading example:', error));
+  }
+
+  // 初期化時にデフォルトのスキーマを読み込む
   document.addEventListener("DOMContentLoaded", function() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
-    schemas.forEach((schema) => {
-      window.schemaRegistry[schema.$id] = schema;
-    });
+    switchExample();
   });
 </script>
 
