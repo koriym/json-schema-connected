@@ -153,7 +153,7 @@
     try {
       await loadAndRegisterSchemas(schemaTexts);
       const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
-      document.getElementById('result').textContent = createTableSQL + "\n\n// Please modify these templates as necessary."
+      document.getElementById('result').textContent = createTableSQL + "\n\n -- Note: Adjust schema as needed for your specific requirements and database system.\n"
       hideToggle();
     } catch (error) {
       console.error('Error converting schemas to SQL:', error);
