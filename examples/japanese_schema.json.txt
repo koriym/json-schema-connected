@@ -6,7 +6,8 @@
     "userId": {
       "type": "string",
       "format": "uuid",
-      "description": "ユーザーの一意の識別子"
+      "description": "ユーザーの一意の識別子",
+      "maxLength": 36
     },
     "username": {
       "type": "string",
@@ -17,16 +18,19 @@
     "email": {
       "type": "string",
       "format": "email",
-      "description": "ユーザーのメールアドレス"
+      "description": "ユーザーのメールアドレス",
+      "maxLength": 255
     },
     "fullName": {
       "type": "string",
-      "description": "ユーザーのフルネーム"
+      "description": "ユーザーのフルネーム",
+      "maxLength": 100
     },
     "profileImage": {
       "type": "string",
       "format": "uri",
-      "description": "ユーザーのプロファイル画像URL"
+      "description": "ユーザーのプロファイル画像URL",
+      "maxLength": 2083
     },
     "socialLinks": {
       "type": "object",
@@ -34,17 +38,20 @@
         "twitter": {
           "type": "string",
           "format": "uri",
-          "description": "Twitterのプロフィールリンク"
+          "description": "Twitterのプロフィールリンク",
+          "maxLength": 2083
         },
         "facebook": {
           "type": "string",
           "format": "uri",
-          "description": "Facebookのプロフィールリンク"
+          "description": "Facebookのプロフィールリンク",
+          "maxLength": 2083
         },
         "instagram": {
           "type": "string",
           "format": "uri",
-          "description": "Instagramのプロフィールリンク"
+          "description": "Instagramのプロフィールリンク",
+          "maxLength": 2083
         }
       },
       "additionalProperties": false,
@@ -53,7 +60,8 @@
     "role": {
       "type": "string",
       "enum": ["customer", "admin", "merchant"],
-      "description": "システムにおけるユーザーの役割"
+      "description": "システムにおけるユーザーの役割",
+      "maxLength": 20
     },
     "addresses": {
       "type": "array",
@@ -121,7 +129,8 @@
     "addressId": {
       "type": "string",
       "format": "uuid",
-      "description": "住所の一意の識別子"
+      "description": "住所の一意の識別子",
+      "maxLength": 36
     },
     "street": {
       "type": "string",
@@ -144,7 +153,8 @@
     "postalCode": {
       "type": "string",
       "description": "郵便番号",
-      "pattern": "^[0-9]{5}(-[0-9]{4})?$"
+      "pattern": "^[0-9]{5}(-[0-9]{4})?$",
+      "maxLength": 10
     },
     "country": {
       "type": "string",
@@ -162,7 +172,8 @@
     "productId": {
       "type": "string",
       "format": "uuid",
-      "description": "製品の一意の識別子"
+      "description": "製品の一意の識別子",
+      "maxLength": 36
     },
     "name": {
       "type": "string",
@@ -180,7 +191,8 @@
     },
     "category": {
       "type": "string",
-      "description": "製品のカテゴリー"
+      "description": "製品のカテゴリー",
+      "maxLength": 50
     },
     "inventory": {
       "type": "integer",
@@ -216,7 +228,8 @@
       "type": "object",
       "patternProperties": {
         "^.*$": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 255
         }
       },
       "description": "製品の追加属性"
@@ -238,7 +251,8 @@
     "orderId": {
       "type": "string",
       "format": "uuid",
-      "description": "注文の一意の識別子"
+      "description": "注文の一意の識別子",
+      "maxLength": 36
     },
     "user": {
       "$ref": "user.json",
@@ -267,7 +281,8 @@
     "status": {
       "type": "string",
       "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
-      "description": "注文の現在のステータス"
+      "description": "注文の現在のステータス",
+      "maxLength": 20
     },
     "orderDate": {
       "type": "string",
@@ -276,7 +291,8 @@
     },
     "trackingNumber": {
       "type": "string",
-      "description": "配送の追跡番号"
+      "description": "配送の追跡番号",
+      "maxLength": 50
     },
     "paymentMethod": {
       "$ref": "paymentMethod.json",
@@ -315,7 +331,8 @@
     "currency": {
       "type": "string",
       "enum": ["USD", "EUR", "JPY"],
-      "description": "金額の通貨"
+      "description": "金額の通貨",
+      "maxLength": 3
     }
   },
   "required": ["amount", "currency"]
@@ -373,7 +390,8 @@
     "supplierId": {
       "type": "string",
       "format": "uuid",
-      "description": "供給者の一意の識別子"
+      "description": "供給者の一意の識別子",
+      "maxLength": 36
     },
     "name": {
       "type": "string",
@@ -386,12 +404,14 @@
       "properties": {
         "phone": {
           "type": "string",
-          "description": "供給者の電話番号"
+          "description": "供給者の電話番号",
+          "maxLength": 20
         },
         "email": {
           "type": "string",
           "format": "email",
-          "description": "供給者のメールアドレス"
+          "description": "供給者のメールアドレス",
+          "maxLength": 255
         },
         "address": {
           "$ref": "address.json",
@@ -410,12 +430,14 @@
     "paymentMethodId": {
       "type": "string",
       "format": "uuid",
-      "description": "支払い方法の一意の識別子"
+      "description": "支払い方法の一意の識別子",
+      "maxLength": 36
     },
     "type": {
       "type": "string",
       "enum": ["creditCard", "paypal", "bankTransfer"],
-      "description": "支払い方法の種類"
+      "description": "支払い方法の種類",
+      "maxLength": 20
     },
     "details": {
       "type": "object",
@@ -423,7 +445,8 @@
         "cardNumber": {
           "type": "string",
           "description": "クレジットカード番号",
-          "pattern": "^[0-9]{16}$"
+          "pattern": "^[0-9]{16}$",
+          "maxLength": 16
         },
         "expiryDate": {
           "type": "string",
@@ -432,12 +455,14 @@
         },
         "bankAccount": {
           "type": "string",
-          "description": "銀行口座番号"
+          "description": "銀行口座番号",
+          "maxLength": 50
         },
         "paypalEmail": {
           "type": "string",
           "format": "email",
-          "description": "PayPalアカウントのメールアドレス"
+          "description": "PayPalアカウントのメールアドレス",
+          "maxLength": 255
         }
       },
       "required": ["cardNumber", "expiryDate"]
@@ -452,11 +477,13 @@
     "discountId": {
       "type": "string",
       "format": "uuid",
-      "description": "割引の一意の識別子"
+      "description": "割引の一意の識別子",
+      "maxLength": 36
     },
     "description": {
       "type": "string",
-      "description": "割引の説明"
+      "description": "割引の説明",
+      "maxLength": 255
     },
     "amount": {
       "$ref": "money.json",
@@ -465,7 +492,8 @@
     "type": {
       "type": "string",
       "enum": ["percentage", "fixed"],
-      "description": "割引の種類"
+      "description": "割引の種類",
+      "maxLength": 20
     },
     "validFrom": {
       "type": "string",
@@ -487,15 +515,18 @@
     "couponId": {
       "type": "string",
       "format": "uuid",
-      "description": "クーポンの一意の識別子"
+      "description": "クーポンの一意の識別子",
+      "maxLength": 36
     },
     "code": {
       "type": "string",
-      "description": "クーポンコード"
+      "description": "クーポンコード",
+      "maxLength": 50
     },
     "description": {
       "type": "string",
-      "description": "クーポンの説明"
+      "description": "クーポンの説明",
+      "maxLength": 255
     },
     "discount": {
       "$ref": "discount.json",
@@ -521,16 +552,19 @@
     "imageId": {
       "type": "string",
       "format": "uuid",
-      "description": "画像の一意の識別子"
+      "description": "画像の一意の識別子",
+      "maxLength": 36
     },
     "url": {
       "type": "string",
       "format": "uri",
-      "description": "画像のURL"
+      "description": "画像のURL",
+      "maxLength": 2083
     },
     "altText": {
       "type": "string",
-      "description": "画像の代替テキスト"
+      "description": "画像の代替テキスト",
+      "maxLength": 255
     }
   },
   "required": ["imageId", "url"]
@@ -562,7 +596,8 @@
     "reviewId": {
       "type": "string",
       "format": "uuid",
-      "description": "レビューの一意の識別子"
+      "description": "レビューの一意の識別子",
+      "maxLength": 36
     },
     "user": {
       "$ref": "user.json",
@@ -595,16 +630,19 @@
     "notificationId": {
       "type": "string",
       "format": "uuid",
-      "description": "通知の一意の識別子"
+      "description": "通知の一意の識別子",
+      "maxLength": 36
     },
     "type": {
       "type": "string",
       "enum": ["orderUpdate", "promotion", "reminder"],
-      "description": "通知の種類"
+      "description": "通知の種類",
+      "maxLength": 20
     },
     "message": {
       "type": "string",
-      "description": "通知のメッセージ"
+      "description": "通知のメッセージ",
+      "maxLength": 500
     },
     "read": {
       "type": "boolean",
@@ -625,15 +663,18 @@
     "variationId": {
       "type": "string",
       "format": "uuid",
-      "description": "バリエーションの一意の識別子"
+      "description": "バリエーションの一意の識別子",
+      "maxLength": 36
     },
     "name": {
       "type": "string",
-      "description": "バリエーション名（例：サイズ、色）"
+      "description": "バリエーション名（例：サイズ、色）",
+      "maxLength": 50
     },
     "value": {
       "type": "string",
-      "description": "バリエーションの値"
+      "description": "バリエーションの値",
+      "maxLength": 50
     },
     "additionalPrice": {
       "$ref": "money.json",
@@ -642,3 +683,4 @@
   },
   "required": ["variationId", "name", "value"]
 }
+
