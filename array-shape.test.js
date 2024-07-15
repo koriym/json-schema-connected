@@ -1,4 +1,4 @@
-const arrayShape = require('./array-shape');
+const arrayShape = require('./schema-array-shape');
 
 describe('JSON Schema Converter', () => {
     // ... (previous test cases remain the same)

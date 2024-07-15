@@ -1,4 +1,4 @@
-const sqlSchema = require('./sql-schema');
+const sqlSchema = require('./schema-sql');
 
 describe('SQL Schema Converter', () => {
     const multipleJsonSchemas = `
