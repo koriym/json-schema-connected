@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "meta-ecommerce.json",
-  "$comment": "Japanese version: これは、複数のファイルにわたる$refの高度な使用と、ユーザー、住所、製品、注文、お金、評価、および注文項目のスキーマを含む複雑なEコマーススキーマセットです。json-schema-connectedの複雑な相互参照を解決し、相互接続されたデータモデルの包括的なドキュメントを生成する能力を示します。complex_scchemaよりさらに複雑です。"
+  "$comment": "これは、複数のファイルにわたる$refの高度な使用と、ユーザー、住所、製品、注文、お金、評価、および注文項目のスキーマを含む複雑なEコマーススキーマセットです。json-schema-connectedの複雑な相互参照を解決し、相互接続されたデータモデルの包括的なドキュメントを生成する能力を示します。"
 }
 {
   "$id": "user.json",
@@ -26,6 +26,33 @@
     "fullName": {
       "type": "string",
       "description": "ユーザーのフルネーム"
+    },
+    "profileImage": {
+      "type": "string",
+      "format": "uri",
+      "description": "ユーザーのプロファイル画像URL"
+    },
+    "socialLinks": {
+      "type": "object",
+      "properties": {
+        "twitter": {
+          "type": "string",
+          "format": "uri",
+          "description": "Twitterのプロフィールリンク"
+        },
+        "facebook": {
+          "type": "string",
+          "format": "uri",
+          "description": "Facebookのプロフィールリンク"
+        },
+        "instagram": {
+          "type": "string",
+          "format": "uri",
+          "description": "Instagramのプロフィールリンク"
+        }
+      },
+      "additionalProperties": false,
+      "description": "ユーザーのソーシャルメディアリンク"
     },
     "role": {
       "type": "string",
@@ -54,6 +81,39 @@
         "$ref": "order.json"
       },
       "description": "ユーザーの注文履歴"
+    },
+    "wishlist": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "ユーザーのウィッシュリスト"
+    },
+    "cart": {
+      "type": "array",
+      "items": {
+        "$ref": "cartItem.json"
+      },
+      "description": "ユーザーのショッピングカート"
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "$ref": "review.json"
+      },
+      "description": "ユーザーのレビュー履歴"
+    },
+    "loyaltyPoints": {
+      "type": "integer",
+      "description": "ユーザーのロイヤルティポイント",
+      "minimum": 0
+    },
+    "notifications": {
+      "type": "array",
+      "items": {
+        "$ref": "notification.json"
+      },
+      "description": "ユーザーへの通知"
     }
   },
   "required": ["userId", "username", "email", "fullName", "role"]
@@ -148,6 +208,29 @@
         "$ref": "product.json"
       },
       "description": "関連する製品"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "$ref": "image.json"
+      },
+      "description": "製品の画像"
+    },
+    "attributes": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": "string"
+        }
+      },
+      "description": "製品の追加属性"
+    },
+    "variations": {
+      "type": "array",
+      "items": {
+        "$ref": "productVariation.json"
+      },
+      "description": "製品のバリエーション（例：サイズ、色）"
     }
   },
   "required": ["productId", "name", "price", "category", "inventory"]
@@ -202,6 +285,24 @@
     "paymentMethod": {
       "$ref": "paymentMethod.json",
       "description": "支払い方法"
+    },
+    "discounts": {
+      "type": "array",
+      "items": {
+        "$ref": "discount.json"
+      },
+      "description": "適用された割引"
+    },
+    "notes": {
+      "type": "string",
+      "description": "注文に関するメモ"
+    },
+    "coupons": {
+      "type": "array",
+      "items": {
+        "$ref": "coupon.json"
+      },
+      "description": "注文に適用されたクーポン"
     }
   },
   "required": ["orderId", "user", "items", "totalAmount", "shippingAddress", "billingAddress", "status", "orderDate"]
@@ -347,4 +448,201 @@
     }
   },
   "required": ["paymentMethodId", "type", "details"]
+}
+{
+  "$id": "discount.json",
+  "type": "object",
+  "properties": {
+    "discountId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "割引の一意の識別子"
+    },
+    "description": {
+      "type": "string",
+      "description": "割引の説明"
+    },
+    "amount": {
+      "$ref": "money.json",
+      "description": "割引金額"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["percentage", "fixed"],
+      "description": "割引の種類"
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time",
+      "description": "割引の有効開始日"
+    },
+    "validTo": {
+      "type": "string",
+      "format": "date-time",
+      "description": "割引の有効終了日"
+    }
+  },
+  "required": ["discountId", "description", "amount", "type", "validFrom", "validTo"]
+}
+{
+  "$id": "coupon.json",
+  "type": "object",
+  "properties": {
+    "couponId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "クーポンの一意の識別子"
+    },
+    "code": {
+      "type": "string",
+      "description": "クーポンコード"
+    },
+    "description": {
+      "type": "string",
+      "description": "クーポンの説明"
+    },
+    "discount": {
+      "$ref": "discount.json",
+      "description": "クーポンの割引"
+    },
+    "validFrom": {
+      "type": "string",
+      "format": "date-time",
+      "description": "クーポンの有効開始日"
+    },
+    "validTo": {
+      "type": "string",
+      "format": "date-time",
+      "description": "クーポンの有効終了日"
+    }
+  },
+  "required": ["couponId", "code", "discount", "validFrom", "validTo"]
+}
+{
+  "$id": "image.json",
+  "type": "object",
+  "properties": {
+    "imageId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "画像の一意の識別子"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "画像のURL"
+    },
+    "altText": {
+      "type": "string",
+      "description": "画像の代替テキスト"
+    }
+  },
+  "required": ["imageId", "url"]
+}
+{
+  "$id": "cartItem.json",
+  "type": "object",
+  "properties": {
+    "product": {
+      "$ref": "product.json",
+      "description": "カート内の製品"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "カート内の製品の数量"
+    },
+    "price": {
+      "$ref": "money.json",
+      "description": "製品の現在の価格"
+    }
+  },
+  "required": ["product", "quantity", "price"]
+}
+{
+  "$id": "review.json",
+  "type": "object",
+  "properties": {
+    "reviewId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "レビューの一意の識別子"
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "レビューを投稿したユーザー"
+    },
+    "product": {
+      "$ref": "product.json",
+      "description": "レビューされた製品"
+    },
+    "rating": {
+      "$ref": "rating.json",
+      "description": "製品の評価"
+    },
+    "comment": {
+      "type": "string",
+      "description": "レビューのコメント"
+    },
+    "reviewDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "レビューの投稿日"
+    }
+  },
+  "required": ["reviewId", "user", "product", "rating", "reviewDate"]
+}
+{
+  "$id": "notification.json",
+  "type": "object",
+  "properties": {
+    "notificationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "通知の一意の識別子"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["orderUpdate", "promotion", "reminder"],
+      "description": "通知の種類"
+    },
+    "message": {
+      "type": "string",
+      "description": "通知のメッセージ"
+    },
+    "read": {
+      "type": "boolean",
+      "description": "通知が既読かどうか"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "通知の日時"
+    }
+  },
+  "required": ["notificationId", "type", "message", "date"]
+}
+{
+  "$id": "productVariation.json",
+  "type": "object",
+  "properties": {
+    "variationId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "バリエーションの一意の識別子"
+    },
+    "name": {
+      "type": "string",
+      "description": "バリエーション名（例：サイズ、色）"
+    },
+    "value": {
+      "type": "string",
+      "description": "バリエーションの値"
+    },
+    "additionalPrice": {
+      "$ref": "money.json",
+      "description": "バリエーションに追加される価格"
+    }
+  },
+  "required": ["variationId", "name", "value"]
 }
