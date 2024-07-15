@@ -4,44 +4,43 @@ function registerJsonSchema(id, schema) {
     arrayShapeSchemaRegistry[id] = schema;
 }
 
-function resolveJsonSchemaRef(ref, baseUrl) {
-    const parts = ref.split('#');
-    const id = parts[0] ? (parts[0].startsWith('/') ? baseUrl + parts[0] : parts[0]) : baseUrl;
-    const path = parts[1] ? parts[1].split('/').slice(1) : [];
-
-    if (!arrayShapeSchemaRegistry[id]) {
-        console.error(`Schema with id ${id} not found in registry`);
-        return null;
-    }
-
-    let schema = arrayShapeSchemaRegistry[id];
-    for (let part of path) {
-        if (!schema[part]) {
-            console.error(`Property ${part} not found in schema ${id}`);
-            return null;
-        }
-        schema = schema[part];
-    }
-    return schema;
+function getSchemaName(schema, fallbackName) {
+    return schema.$id ? schema.$id.split('/').pop().split('.')[0] :
+        schema.title ? schema.title.replace(/\s+/g, '') :
+            fallbackName;
 }
 
-function jsonSchemaToArrayShape(schema, baseUrl) {
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function jsonSchemaToArrayShape(schema, baseUrl, schemaName, visited = new Set()) {
+    if (typeof schema !== 'object' || schema === null) {
+        return 'undefined';
+    }
+
+    const schemaId = schema.$id || baseUrl;
+    if (visited.has(schemaId)) {
+        return capitalizeFirstLetter(getSchemaName(schema, schemaName));
+    }
+    visited.add(schemaId);
+
     let shape = {};
 
     if (schema.$ref) {
-        schema = resolveJsonSchemaRef(schema.$ref, baseUrl);
-        if (!schema) {
-            return 'undefined';
-        }
+        const refParts = schema.$ref.split('/');
+        const refName = refParts[refParts.length - 1].split('.')[0];
+        return capitalizeFirstLetter(refName);
     }
 
     if (schema.type) {
         if (schema.type === 'object' && schema.properties) {
             for (let key in schema.properties) {
-                shape[key] = jsonSchemaToArrayShape(schema.properties[key], baseUrl);
+                shape[key] = jsonSchemaToArrayShape(schema.properties[key], baseUrl, key, new Set(visited));
             }
         } else if (schema.type === 'array' && schema.items) {
-            shape = 'array<' + jsonSchemaToArrayShape(schema.items, baseUrl) + '>';
+            const itemSchemaName = getSchemaName(schema.items, `${schemaName}Item`);
+            shape = `array<${jsonSchemaToArrayShape(schema.items, baseUrl, itemSchemaName, new Set(visited))}>`;
         } else if (schema.type === 'string') {
             shape = 'string';
         } else if (schema.type === 'number' || schema.type === 'integer') {
@@ -51,6 +50,9 @@ function jsonSchemaToArrayShape(schema, baseUrl) {
         } else if (schema.type === 'null') {
             shape = 'null';
         }
+    } else {
+        // If type is not specified, treat it as an object
+        shape = capitalizeFirstLetter(getSchemaName(schema, schemaName));
     }
 
     if (typeof shape === 'object') {
@@ -91,18 +93,20 @@ function convertJsonSchemasToArrayShapes(jsonSchemasText) {
     const schemas = extractJsonSchemas(jsonSchemasText).map(schemaText => JSON.parse(schemaText.trim()));
 
     schemas.forEach((schema) => {
-        registerJsonSchema(schema.$id, schema);
+        registerJsonSchema(schema.$id || schema.title || 'unnamed_schema', schema);
     });
 
-    const baseUrl = typeof window !== 'undefined' ? window.location.href : '';
-    return schemas.map(schema => jsonSchemaToArrayShape(schema, baseUrl));
+    const baseUrl = '';
+    return schemas.map(schema => {
+        const schemaName = getSchemaName(schema, 'UnnamedSchema');
+        return jsonSchemaToArrayShape(schema, baseUrl, schemaName, new Set());
+    });
 }
 
 // グローバル変数として公開（ブラウザ環境）
 if (typeof window !== 'undefined') {
     window.arrayShape = {
         registerJsonSchema,
-        resolveJsonSchemaRef,
         jsonSchemaToArrayShape,
         extractJsonSchemas,
         convertJsonSchemasToArrayShapes
@@ -113,7 +117,6 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         registerJsonSchema,
-        resolveJsonSchemaRef,
         jsonSchemaToArrayShape,
         extractJsonSchemas,
         convertJsonSchemasToArrayShapes
