@@ -80,7 +80,6 @@
 <div>
   <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
   <textarea id="jsonSchemas" rows="10" cols="50" oninput="autoResize(this)">
-    <!-- デフォルトの簡単なスキーマをここに配置 -->
   </textarea>
 </div>
 <div>
@@ -208,7 +207,7 @@
     toggleView('raw');
   }
 
-  let currentView = 'raw';
+  let currentView = 'preview';
   function toggleView(view) {
     if (view === currentView) return;
 
@@ -231,7 +230,7 @@
     currentView = view;
   }
 
-  // 新しい関数: サンプル切り替え用
+  // サンプル切り替え用
   const examples = [
     'examples/simple_schema.json.txt',
     'examples/medium_schema.json.txt',
