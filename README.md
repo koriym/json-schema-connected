@@ -11,6 +11,12 @@ This project provides a set of utilities for working with JSON Schemas. It inclu
 
 These utilities help you generate sample data, create SQL tables, and produce documentation from your JSON Schemas.
 
+## Online Service
+
+You can use the online version of this converter without installing anything on your local machine. Visit the following URL:
+
+[json-schema-connected Converter](https://koriym.github.io/json-schema-connected/)
+
 ## Table of Contents
 
 - [Installation](#installation)
