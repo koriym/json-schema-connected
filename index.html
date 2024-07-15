@@ -242,6 +242,7 @@
   let currentExampleIndex = -1;
 
   function switchExample() {
+    document.getElementById('result').textContent = '';
     currentExampleIndex = (currentExampleIndex + 1) % examples.length;
     fetch(examples[currentExampleIndex])
             .then(response => response.text())
