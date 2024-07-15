@@ -30,11 +30,18 @@ function getColumnType(property) {
         return "REFERENCE";
     } else {
         switch (property.type) {
-            case "integer": return "INT";
-            case "number": return "DECIMAL";
+            case "integer":
+                return property.format === "id" ? "INT AUTO_INCREMENT PRIMARY KEY" :
+                    property.format === "int64" ? "BIGINT" : "INT";
+            case "number": return property.format === "float" ? "FLOAT" : "DECIMAL";
             case "boolean": return "BOOLEAN";
             case "array": return "JSON";
             case "object": return "JSON";
+            case "string":
+                if (property.format === "date") return "DATE";
+                if (property.format === "date-time") return "TIMESTAMP";
+                if (property.maxLength) return `VARCHAR(${property.maxLength})`;
+                return "TEXT";
             default: return "VARCHAR(255)";
         }
     }
@@ -46,27 +53,66 @@ function jsonSchemaToCreateTable(jsonSchema, tableName) {
     const required = schema.required || [];
     const foreignKeys = [];
     const columns = [];
+    const indices = [];
+    const uniques = [];
+
+    let primaryKey = null;
 
     for (const [prop, propertySchema] of Object.entries(properties)) {
         const columnName = camelToSnake(prop);
         let columnType = getColumnType(propertySchema);
+        let columnDef = `${columnName} ${columnType}`;
+
+        if (required.includes(prop)) {
+            columnDef += ' NOT NULL';
+        }
+
+        if (propertySchema.default !== undefined) {
+            columnDef += ` DEFAULT ${JSON.stringify(propertySchema.default)}`;
+        }
+
+        if (columnType.includes("PRIMARY KEY")) {
+            primaryKey = columnName;
+        }
 
         if (columnType === "REFERENCE") {
             const refSchema = resolveJsonSchemaRef(propertySchema.$ref);
             const refTableName = propertySchema.$ref.split('.')[0];
-            const refColumnName = Object.keys(refSchema.properties).find(key => key.toLowerCase().includes('id')) || 'id';
+            const refColumnName = Object.keys(refSchema.properties).find(key =>
+                refSchema.properties[key].type === "integer" && refSchema.properties[key].format === "id"
+            ) || 'id';
             foreignKeys.push(`FOREIGN KEY (${columnName}_id) REFERENCES ${refTableName}(${camelToSnake(refColumnName)})`);
             columns.push(`${columnName}_id INT${required.includes(prop) ? ' NOT NULL' : ''}`);
+            indices.push(`CREATE INDEX idx_${tableName}_${columnName}_id ON ${tableName}(${columnName}_id);`);
         } else {
-            columns.push(`${columnName} ${columnType}${required.includes(prop) ? ' NOT NULL' : ''}`);
+            columns.push(columnDef);
         }
+
+        if (propertySchema.pattern === "UNIQUE") {
+            uniques.push(`UNIQUE (${columnName})`);
+        }
+    }
+
+    if (!primaryKey) {
+        columns.unshift('id INT AUTO_INCREMENT PRIMARY KEY');
+        primaryKey = 'id';
     }
 
     if (foreignKeys.length > 0) {
         columns.push(...foreignKeys);
     }
 
-    return `CREATE TABLE ${tableName} (\n  ${columns.join(',\n  ')}\n);`;
+    if (uniques.length > 0) {
+        columns.push(...uniques);
+    }
+
+    let createTableStatement = `CREATE TABLE ${tableName} (\n  ${columns.join(',\n  ')}\n);`;
+
+    if (indices.length > 0) {
+        createTableStatement += '\n\n' + indices.join('\n');
+    }
+
+    return createTableStatement;
 }
 
 function extractJsonSchemas(text) {
