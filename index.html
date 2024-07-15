@@ -88,14 +88,15 @@
   <button onclick="convertJsonSchemasToMarkdown()" aria-label="Convert JSON Schemas to Markdown">Convert to Markdown</button>
 </div>
 <div>
-  <label for="result" class="sr-only">Result:</label>
-  <pre id="result"></pre>
-  <div class="preview-content" id="preview"></div>
   <div id="previewToggleContainer" style="display: none;">
     <span id="rawToggle" class="preview-toggle active" onclick="toggleView('raw')">raw</span>
     |
     <span id="previewToggle" class="preview-toggle" onclick="toggleView('preview')">preview</span>
   </div>
+  <label for="result" class="sr-only">Result:</label>
+  <pre id="result"></pre>
+  <div class="preview-content" id="preview"></div>
+
 </div>
 
 <script src="array-shape.js"></script>
@@ -166,8 +167,8 @@
       const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
       document.getElementById('result').textContent = markdown;
       document.getElementById('preview').innerHTML = marked(markdown);
-      showPreviewToggle();
       toggleView('preview');
+      showPreviewToggle();
     } catch (error) {
       console.error('Error converting schemas to Markdown:', error);
     }
