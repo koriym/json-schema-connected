@@ -1,84 +1,316 @@
-# json-schema-connected
+# JSON-Schema-Connected
 [![Node.js CI](https://github.com/koriym/json-schema-connected/actions/workflows/nodejs.yml/badge.svg)](https://github.com/koriym/json-schema-to-array-shape/actions/workflows/nodejs.yml)
 
 <img src="images/json-schema-connected.png" width="250px" alt="logo">
 
-`json-schema-connected` is a JavaScript library for converting JSON Schemas to PHP array shapes and SQL CREATE statements. It helps in defining the structure and format of your JSON data and generating corresponding representations in PHP and SQL.
+This project provides a set of utilities for working with JSON Schemas. It includes three main libraries:
 
-## Features
+1. Array Shape Generator
+2. SQL Schema Generator
+3. Markdown Documentation Generator
 
-- Convert JSON Schemas to PHP array shapes.
-- Convert JSON Schemas to SQL CREATE statements, including resolving `$ref` references.
-- Supports nested schemas and references.
+These utilities help you generate sample data, create SQL tables, and produce documentation from your JSON Schemas.
 
-## Online Service
+## Table of Contents
 
-You can use the online version of this converter without installing anything on your local machine. Visit the following URL:
-
-[json-schema-connected Converter](https://koriym.github.io/json-schema-connected/)
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Array Shape Generator](#array-shape-generator)
+    - [SQL Schema Generator](#sql-schema-generator)
+    - [Markdown Documentation Generator](#markdown-documentation-generator)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [JSON Schema-Centric Data Modeling](#json-schema-centric-data-modeling)
+    - [Benefits](#benefits)
+    - [Background](#background)
+    - [Design Philosophy](#design-philosophy)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Installation
 
-### Using CDN
+To use these utilities, clone this repository and install the dependencies:
 
-You can include the library directly in your HTML via the following URL:
-
-```html
-<script src="https://koriym.github.io/json-schema-connected/array-shape.js"></script>
-<script src="https://koriym.github.io/json-schema-connected/sql-schema.js"></script>
+```bash
+git clone https://github.com/koriym/json-schema-connected.git
+cd json-schema-connected
+npm install
 ```
 
 ## Usage
 
-### JSON Schema to PHP Array Shape and SQL CREATE Statements
+### Array Shape Generator
 
-Include the array-shape.js and sql-schema.js scripts and use the provided functions to convert JSON Schemas to PHP array shapes and SQL CREATE statements.
+The Array Shape Generator creates a sample array based on your JSON Schema.
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>JSON Schema to Array Shape Converter</title>
-</head>
-<body>
-<textarea id="jsonSchemas" rows="10" cols="50">
-{
-  "$id": "person.json",
-  "type": "object",
-  "properties": {
-    "name": { "type": "string" },
-    "address": { "$ref": "address.json" }
+```javascript
+const { generateArrayShape } = require('./array-shape');
+
+const schema = {
+  type: 'object',
+  properties: {
+    id: { type: 'integer' },
+    name: { type: 'string' }
   }
-}
-{
-  "$id": "address.json",
-  "type": "object",
-  "properties": {
-    "street": { "type": "string" },
-    "city": { "type": "string" }
-  }
-}
-</textarea>
-<button onclick="convertJsonSchemasToArrayShapes()">Convert to Array Shape</button>
-<button onclick="convertJsonSchemasToCreateTables()">Convert to SQL</button>
-<pre id="result"></pre>
+};
 
-<script src="https://koriym.github.io/json-schema-to-array-shape/array-shape.js"></script>
-<script src="https://koriym.github.io/json-schema-to-array-shape/sql-schema.js"></script>
-<script>
-    function convertJsonSchemasToArrayShapes() {
-        const jsonSchemasText = document.getElementById('jsonSchemas').value;
-        const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
-        document.getElementById('result').textContent = arrayShapes.join('\n');
-    }
-
-    function convertJsonSchemasToCreateTables() {
-        const jsonSchemasText = document.getElementById('jsonSchemas').value;
-        const createTables = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
-        document.getElementById('result').textContent = createTables;
-    }
-</script>
-</body>
-</html>
+const arrayShape = generateArrayShape(schema);
+console.log(arrayShape);
 ```
+
+### SQL Schema Generator
+
+The SQL Schema Generator creates SQL `CREATE TABLE` statements from your JSON Schema.
+
+```javascript
+const { jsonSchemaToCreateTable, convertJsonSchemasToCreateTables } = require('./sql-schema');
+
+// For a single schema
+const singleSchema = { /* your JSON schema here */ };
+const sqlStatement = jsonSchemaToCreateTable(singleSchema, 'tableName');
+console.log(sqlStatement);
+
+// For multiple schemas
+const multipleSchemas = [ /* array of JSON schemas */ ];
+const allSql = convertJsonSchemasToCreateTables(JSON.stringify(multipleSchemas));
+console.log(allSql);
+```
+
+### Markdown Documentation Generator
+
+The Markdown Documentation Generator creates readable documentation from your JSON Schema.
+
+```javascript
+const { jsonSchemaToMarkdown, generateFullMarkdown } = require('./schema-markdown');
+
+// For a single schema
+const singleSchema = { /* your JSON schema here */ };
+const markdown = jsonSchemaToMarkdown(singleSchema, __dirname);
+console.log(markdown);
+
+// For multiple schemas
+const multipleSchemas = [ /* array of JSON schemas */ ];
+const fullMarkdown = generateFullMarkdown(multipleSchemas, __dirname);
+console.log(fullMarkdown);
+```
+
+## API Reference
+
+### Array Shape Generator
+
+- `generateArrayShape(schema: object): array`
+  Generates a sample array based on the provided JSON Schema.
+
+### SQL Schema Generator
+
+- `jsonSchemaToCreateTable(schema: object, tableName: string): string`
+  Generates a SQL CREATE TABLE statement for a single JSON Schema.
+
+- `convertJsonSchemasToCreateTables(schemas: string): string`
+  Generates SQL CREATE TABLE statements for multiple JSON Schemas.
+
+### Markdown Documentation Generator
+
+- `jsonSchemaToMarkdown(schema: object, baseDir: string): string`
+  Generates Markdown documentation for a single JSON Schema.
+
+- `generateFullMarkdown(schemas: array, baseDir: string): string`
+  Generates Markdown documentation for multiple JSON Schemas.
+
+## Examples
+
+Here are some practical examples demonstrating how to use the JSON Schema Utilities in various scenarios:
+
+### 1. Basic Usage
+
+This example shows how to use all three utilities with a simple JSON Schema:
+
+```javascript
+const fs = require('fs');
+const { generateArrayShape } = require('./array-shape');
+const { jsonSchemaToCreateTable } = require('./sql-schema');
+const { jsonSchemaToMarkdown } = require('./schema-markdown');
+
+// Define a simple JSON Schema
+const schema = {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Person",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The person's full name"
+    },
+    "age": {
+      "type": "integer",
+      "description": "Age in years",
+      "minimum": 0
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email address"
+    }
+  },
+  "required": ["name", "age"]
+};
+
+// Generate array shape
+console.log("Array Shape:");
+console.log(JSON.stringify(generateArrayShape(schema), null, 2));
+
+// Generate SQL
+console.log("\nSQL Create Table Statement:");
+console.log(jsonSchemaToCreateTable(schema, "person"));
+
+// Generate Markdown
+console.log("\nMarkdown Documentation:");
+console.log(jsonSchemaToMarkdown(schema, __dirname));
+```
+
+### 2. Working with Multiple Schemas
+
+This example demonstrates how to work with multiple interconnected schemas:
+
+```javascript
+const { convertJsonSchemasToCreateTables } = require('./sql-schema');
+const { generateFullMarkdown } = require('./schema-markdown');
+
+// Define multiple schemas
+const schemas = [
+  {
+    "$id": "https://example.com/person.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Person",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "description": "The unique identifier for a person"
+      },
+      "name": {
+        "type": "string",
+        "description": "The person's full name"
+      },
+      "address": {
+        "$ref": "https://example.com/address.schema.json"
+      }
+    },
+    "required": ["id", "name"]
+  },
+  {
+    "$id": "https://example.com/address.schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Address",
+    "type": "object",
+    "properties": {
+      "street": {
+        "type": "string",
+        "description": "The street address"
+      },
+      "city": {
+        "type": "string",
+        "description": "The city name"
+      },
+      "country": {
+        "type": "string",
+        "description": "The country name"
+      }
+    },
+    "required": ["street", "city", "country"]
+  }
+];
+
+// Generate SQL for all schemas
+console.log("SQL Create Table Statements:");
+console.log(convertJsonSchemasToCreateTables(JSON.stringify(schemas)));
+
+// Generate full Markdown documentation
+console.log("\nFull Markdown Documentation:");
+console.log(generateFullMarkdown(schemas, __dirname));
+```
+
+### 3. Integrating with a Web Application
+
+This example shows how you might integrate these utilities into a simple Express.js web application:
+
+```javascript
+const express = require('express');
+const { generateArrayShape } = require('./array-shape');
+const { jsonSchemaToCreateTable } = require('./sql-schema');
+const { jsonSchemaToMarkdown } = require('./schema-markdown');
+
+const app = express();
+app.use(express.json());
+
+app.post('/generate', (req, res) => {
+  const schema = req.body;
+  
+  const arrayShape = generateArrayShape(schema);
+  const sqlStatement = jsonSchemaToCreateTable(schema, 'generated_table');
+  const markdown = jsonSchemaToMarkdown(schema, __dirname);
+
+  res.json({
+    arrayShape,
+    sqlStatement,
+    markdown
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+```
+
+These examples demonstrate various ways to use the JSON Schema Utilities in different contexts, from basic usage to integration in a web application. They provide a starting point for users to understand how to incorporate these tools into their own projects.
+
+## JSON Schema-Centric Data Modeling
+
+### Benefits
+
+Data modeling centered around JSON Schema offers several significant advantages:
+
+1. **Language-Agnostic**: JSON Schema is independent of any programming language, making it ideal for cross-platform and multi-language projects.
+
+2. **Self-Documenting**: JSON Schema provides a clear, readable description of your data structure, serving as both specification and documentation.
+
+3. **Validation**: JSON Schema allows for automatic validation of data, ensuring data integrity across your application.
+
+4. **Tooling Support**: Many tools and libraries support JSON Schema, allowing for code generation, data mocking, and more.
+
+5. **Flexibility**: JSON Schema can describe simple to complex data structures, accommodating a wide range of use cases.
+
+6. **Interoperability**: JSON Schema facilitates easy data exchange between different systems and services.
+
+7. **Version Control Friendly**: Being text-based, JSON Schema works well with version control systems, making it easy to track changes in your data model over time.
+
+### Background
+
+JSON Schema emerged as a response to the growing popularity of JSON (JavaScript Object Notation) as a data interchange format. While JSON itself is lightweight and easy to read, it lacks a built-in way to describe the structure of data or enforce constraints.
+
+JSON Schema was introduced to address these limitations. It provides a vocabulary to annotate and validate JSON documents, offering a contract for what JSON data should look like. This concept has roots in XML Schema and other data description formats, but it's designed to be more lightweight and JSON-centric.
+
+### Design Philosophy
+
+The design philosophy behind JSON Schema-centric data modeling emphasizes several key principles:
+
+1. **Separation of Concerns**: By defining data structure separately from code, we achieve a clear separation between data modeling and application logic.
+
+2. **Single Source of Truth**: The JSON Schema becomes the authoritative definition of your data model, reducing inconsistencies across different parts of your system.
+
+3. **Design-First Approach**: Encouraging developers to think about and define their data structures before implementation leads to more thoughtful and robust system designs.
+
+4. **Extensibility**: JSON Schema is designed to be extensible, allowing for custom vocabularies and extensions to meet specific needs.
+
+5. **Human and Machine Readable**: The format strikes a balance between being easily understood by humans and efficiently processed by machines.
+
+6. **Reusability**: Schemas can be shared and reused across different parts of an application or even between different applications, promoting consistency and reducing duplication.
+
+By centering your data modeling around JSON Schema and leveraging tools like those provided in this project, you can create more maintainable, consistent, and well-documented data models for your applications.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License.
