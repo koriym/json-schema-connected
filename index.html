@@ -65,10 +65,6 @@
     .preview-content th {
       background-color: #f2f2f2;
     }
-    .indented {
-      white-space: pre-wrap;
-      font-family: monospace;
-    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/2.0.3/marked.min.js"></script>
 </head>
@@ -92,20 +88,14 @@
   <button onclick="convertJsonSchemasToMarkdown()" aria-label="Convert JSON Schemas to Markdown">Convert to Markdown</button>
 </div>
 <div>
-  <div id="previewToggleContainer" style="display: none;">
-    <span id="rawToggle" class="preview-toggle active" onclick="toggleView('raw')">raw</span>
+  <div id="toggleContainer" style="display: none;">
+    <span id="option1Toggle" class="preview-toggle active" onclick="toggleView('option1')">option1</span>
     |
-    <span id="previewToggle" class="preview-toggle" onclick="toggleView('preview')">preview</span>
-  </div>
-  <div id="arrayShapeToggleContainer" style="display: none;">
-    <span id="flatToggle" class="preview-toggle active" onclick="toggleArrayShapeView('flat')">flat</span>
-    |
-    <span id="indentedToggle" class="preview-toggle" onclick="toggleArrayShapeView('indented')">indented</span>
+    <span id="option2Toggle" class="preview-toggle" onclick="toggleView('option2')">option2</span>
   </div>
   <label for="result" class="sr-only">Result:</label>
   <pre id="result"></pre>
-  <div class="preview-content" id="preview"></div>
-  <pre id="indentedResult" style="display: none;"></pre>
+  <pre id="option2Content" style="display: none;"></pre>
 </div>
 
 <script src="array-shape.js"></script>
@@ -148,12 +138,10 @@
       const flatResult = arrayShapes.join('\n');
       document.getElementById('result').textContent = flatResult;
 
-      // インデント付きの結果を生成
       const indentedResult = arrayShapes.map(shape => indentArrayShape(shape)).join('\n\n');
-      document.getElementById('indentedResult').textContent = indentedResult;
+      document.getElementById('option2Content').textContent = indentedResult;
 
-      hidePreviewToggle();
-      showArrayShapeToggle();
+      showToggle('flat', 'indented');
     } catch (error) {
       console.error('Error converting schemas to array shapes:', error);
     }
@@ -167,8 +155,7 @@
       await loadAndRegisterSchemas(schemaTexts);
       const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
       document.getElementById('result').textContent = createTableSQL;
-      hidePreviewToggle();
-      hideArrayShapeToggle();
+      hideToggle();
     } catch (error) {
       console.error('Error converting schemas to SQL:', error);
     }
@@ -183,10 +170,9 @@
       const baseDir = '';
       const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
       document.getElementById('result').textContent = markdown;
-      document.getElementById('preview').innerHTML = marked(markdown);
-      toggleView('preview');
-      showPreviewToggle();
-      hideArrayShapeToggle();
+      document.getElementById('option2Content').innerHTML = marked(markdown);
+      showToggle('raw', 'preview');
+      toggleView('option2');  // 初期表示をpreviewに設定
     } catch (error) {
       console.error('Error converting schemas to Markdown:', error);
     }
@@ -218,73 +204,48 @@
 
   window.schemaRegistry = {};
 
-  function showPreviewToggle() {
-    document.getElementById('previewToggleContainer').style.display = 'block';
+  function showToggle(option1, option2) {
+    const toggleContainer = document.getElementById('toggleContainer');
+    const option1Toggle = document.getElementById('option1Toggle');
+    const option2Toggle = document.getElementById('option2Toggle');
+
+    toggleContainer.style.display = 'block';
+    option1Toggle.textContent = option1;
+    option2Toggle.textContent = option2;
+    toggleView('option1');
   }
 
-  function hidePreviewToggle() {
-    document.getElementById('previewToggleContainer').style.display = 'none';
-    toggleView('raw');
+  function hideToggle() {
+    document.getElementById('toggleContainer').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('option2Content').style.display = 'none';
   }
 
-  function showArrayShapeToggle() {
-    document.getElementById('arrayShapeToggleContainer').style.display = 'block';
-  }
+  function toggleView(option) {
+    const result = document.getElementById('result');
+    const option2Content = document.getElementById('option2Content');
+    const option1Toggle = document.getElementById('option1Toggle');
+    const option2Toggle = document.getElementById('option2Toggle');
 
-  function hideArrayShapeToggle() {
-    document.getElementById('arrayShapeToggleContainer').style.display = 'none';
-  }
-
-  let currentView = 'raw';
-  function toggleView(view) {
-    if (view === currentView) return;
-
-    const rawContent = document.getElementById('result');
-    const previewContent = document.getElementById('preview');
-    const rawToggle = document.getElementById('rawToggle');
-    const previewToggle = document.getElementById('previewToggle');
-
-    if (view === 'raw') {
-      rawContent.style.display = 'block';
-      previewContent.style.display = 'none';
-      rawToggle.classList.add('active');
-      previewToggle.classList.remove('active');
+    if (option === 'option1') {
+      result.style.display = 'block';
+      option2Content.style.display = 'none';
+      option1Toggle.classList.add('active');
+      option2Toggle.classList.remove('active');
     } else {
-      rawContent.style.display = 'none';
-      previewContent.style.display = 'block';
-      rawToggle.classList.remove('active');
-      previewToggle.classList.add('active');
+      result.style.display = 'none';
+      option2Content.style.display = 'block';
+      option1Toggle.classList.remove('active');
+      option2Toggle.classList.add('active');
     }
-    currentView = view;
-  }
-
-  let currentArrayShapeView = 'flat';
-  function toggleArrayShapeView(view) {
-    if (view === currentArrayShapeView) return;
-
-    const flatContent = document.getElementById('result');
-    const indentedContent = document.getElementById('indentedResult');
-    const flatToggle = document.getElementById('flatToggle');
-    const indentedToggle = document.getElementById('indentedToggle');
-
-    if (view === 'flat') {
-      flatContent.style.display = 'block';
-      indentedContent.style.display = 'none';
-      flatToggle.classList.add('active');
-      indentedToggle.classList.remove('active');
-    } else {
-      flatContent.style.display = 'none';
-      indentedContent.style.display = 'block';
-      flatToggle.classList.remove('active');
-      indentedToggle.classList.add('active');
-    }
-    currentArrayShapeView = view;
   }
 
   function indentArrayShape(shape) {
     return shape.replace(/,/g, ',\n  ')
             .replace(/{/g, '{\n  ')
-            .replace(/}/g, '\n}');
+            .replace(/}/g, '\n}')
+            .replace(/</g, '<\n  ')
+            .replace(/>/g, '\n>');
   }
 
   // サンプル切り替え用
