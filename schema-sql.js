@@ -35,8 +35,8 @@ function getColumnType(property) {
                     property.format === "int64" ? "BIGINT" : "INT";
             case "number": return property.format === "float" ? "FLOAT" : "DECIMAL";
             case "boolean": return "BOOLEAN";
-            case "array": return "JSON";
-            case "object": return "JSON";
+            case "array": return "JSON -- Consider normalization";
+            case "object": return "JSON -- Consider normalization";
             case "string":
                 if (property.format === "date") return "DATE";
                 if (property.format === "date-time") return "TIMESTAMP";
