@@ -1,0 +1,9 @@
+{
+    "$id": "customer.json",
+    "type": "object",
+    "properties": {
+        "customerId": { "type": "integer" },
+        "name": { "type": "string" },
+        "address": { "$ref": "address.json" }
+    }
+}
