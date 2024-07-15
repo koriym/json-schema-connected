@@ -44,7 +44,7 @@ function jsonSchemaToArrayShape(schema, baseUrl, schemaName, visited = new Set()
         } else if (schema.type === 'string') {
             shape = 'string';
         } else if (schema.type === 'number' || schema.type === 'integer') {
-            shape = 'int|float';
+            shape = 'int';
         } else if (schema.type === 'boolean') {
             shape = 'bool';
         } else if (schema.type === 'null') {
