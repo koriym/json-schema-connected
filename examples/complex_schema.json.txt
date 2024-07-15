@@ -1,0 +1,228 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "meta-ecommerce.json",
+  "$comment": "This is a complex E-commerce schema set demonstrating advanced JSON Schema features and extensive use of $ref across multiple files. It includes user, address, product, order, money, rating, and orderItem schemas, showcasing intricate relationships and nested structures typical in real-world applications. This schema set highlights json-schema-connected's ability to resolve complex cross-references and generate comprehensive documentation for interconnected data models."
+}
+{
+  "$id": "user.json",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The unique identifier for a user."
+    },
+    "username": {
+      "type": "string",
+      "description": "The user's username.",
+      "minLength": 3,
+      "maxLength": 20
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "The user's email address."
+    },
+    "fullName": {
+      "type": "string",
+      "description": "The user's full name."
+    },
+    "role": {
+      "type": "string",
+      "enum": ["customer", "admin", "merchant"],
+      "description": "The user's role in the system."
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "$ref": "address.json"
+      },
+      "description": "The user's addresses.",
+      "minItems": 1
+    }
+  },
+  "required": ["userId", "username", "email", "fullName", "role"]
+}
+{
+  "$id": "address.json",
+  "type": "object",
+  "properties": {
+    "street": {
+      "type": "string",
+      "description": "The street name and number.",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "city": {
+      "type": "string",
+      "description": "The city name.",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "state": {
+      "type": "string",
+      "description": "The state or province name.",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "postalCode": {
+      "type": "string",
+      "description": "The postal code.",
+      "pattern": "^[0-9]{5}(-[0-9]{4})?$"
+    },
+    "country": {
+      "type": "string",
+      "description": "The country name.",
+      "minLength": 1,
+      "maxLength": 50
+    }
+  },
+  "required": ["street", "city", "state", "postalCode", "country"]
+}
+{
+  "$id": "product.json",
+  "type": "object",
+  "properties": {
+    "productId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The unique identifier for a product."
+    },
+    "name": {
+      "type": "string",
+      "description": "The name of the product.",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "The description of the product."
+    },
+    "price": {
+      "$ref": "money.json",
+      "description": "The price of the product."
+    },
+    "category": {
+      "type": "string",
+      "description": "The category of the product."
+    },
+    "inventory": {
+      "type": "integer",
+      "description": "The number of items in stock.",
+      "minimum": 0
+    },
+    "ratings": {
+      "type": "array",
+      "items": {
+        "$ref": "rating.json"
+      },
+      "description": "The ratings for this product."
+    }
+  },
+  "required": ["productId", "name", "price", "category", "inventory"]
+}
+{
+  "$id": "order.json",
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The unique identifier for an order."
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "The user who placed the order."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "orderItem.json"
+      },
+      "description": "The items in the order.",
+      "minItems": 1
+    },
+    "totalAmount": {
+      "$ref": "money.json",
+      "description": "The total amount of the order."
+    },
+    "shippingAddress": {
+      "$ref": "address.json",
+      "description": "The shipping address for the order."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
+      "description": "The current status of the order."
+    },
+    "orderDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the order was placed."
+    }
+  },
+  "required": ["orderId", "user", "items", "totalAmount", "shippingAddress", "status", "orderDate"]
+}
+{
+  "$id": "money.json",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "description": "The monetary amount.",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "JPY"],
+      "description": "The currency of the amount."
+    }
+  },
+  "required": ["amount", "currency"]
+}
+{
+  "$id": "rating.json",
+  "type": "object",
+  "properties": {
+    "user": {
+      "$ref": "user.json",
+      "description": "The user who provided the rating."
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "The rating score (1-5)."
+    },
+    "comment": {
+      "type": "string",
+      "description": "The comment associated with the rating."
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the rating was submitted."
+    }
+  },
+  "required": ["user", "score", "date"]
+}
+{
+  "$id": "orderItem.json",
+  "type": "object",
+  "properties": {
+    "product": {
+      "$ref": "product.json",
+      "description": "The product in the order."
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The quantity of the product ordered."
+    },
+    "price": {
+      "$ref": "money.json",
+      "description": "The price of the product at the time of order."
+    }
+  },
+  "required": ["product", "quantity", "price"]
+}
