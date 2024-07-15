@@ -30,8 +30,7 @@ function resolveJsonSchemaRef(ref, baseDir) {
     return schema;
 }
 
-function jsonSchemaToMarkdown(schema, baseDir, parentSchemaId = null, seenSchemas = new Set()) {
-    const isEmbedded = !!parentSchemaId;
+function jsonSchemaToMarkdown(schema, baseDir, isSubSchema = false, seenSchemas = new Set()) {
     const schemaId = schema.$id || 'Unknown';
 
     if (seenSchemas.has(schemaId)) {
@@ -39,21 +38,16 @@ function jsonSchemaToMarkdown(schema, baseDir, parentSchemaId = null, seenSchema
     }
     seenSchemas.add(schemaId);
 
-    let md = `### ${isEmbedded ? 'Embedded' : 'Schema'}: ${schemaId}\n\n`;
+    let md = isSubSchema ? '' : `## ${schemaId.replace('.json', '')}\n\n`;
 
     if (schema.properties) {
-        md += '#### Properties\n\n';
         md += '| Property | Type    | Description | Required | Constraints |\n';
         md += '|----------|---------|-------------|----------|-------------|\n';
 
         for (let [key, value] of Object.entries(schema.properties)) {
             if (value.$ref) {
-                const refSchema = resolveJsonSchemaRef(value.$ref, baseDir);
                 const refSchemaId = value.$ref.replace('.json', '');
-                md += `| ${key} | [object](#embedded-${refSchemaId})  | Embedded: ${key} | No | |\n`;
-                if (!isEmbedded) {
-                    md += `\n${jsonSchemaToMarkdown(refSchema, baseDir, refSchemaId, seenSchemas)}\n`;
-                }
+                md += `| ${key} | object | Embedded: [${refSchemaId}](#${refSchemaId}) | ${(schema.required && schema.required.includes(key)) ? 'Yes' : 'No'} | |\n`;
             } else {
                 const type = value.type || 'object';
                 const description = value.description || '';
@@ -67,16 +61,32 @@ function jsonSchemaToMarkdown(schema, baseDir, parentSchemaId = null, seenSchema
     return md;
 }
 
+function generateFullMarkdown(schemas, baseDir) {
+    let fullMd = '';
+    const processedSchemas = new Set();
+
+    for (const schema of schemas) {
+        if (!processedSchemas.has(schema.$id)) {
+            fullMd += jsonSchemaToMarkdown(schema, baseDir, false, processedSchemas);
+            fullMd += '\n\n';
+        }
+    }
+
+    return fullMd.trim();
+}
+
 // グローバル変数として公開（ブラウザ環境）
 if (typeof window !== 'undefined') {
     window.schemaMarkdown = {
-        jsonSchemaToMarkdown
+        jsonSchemaToMarkdown,
+        generateFullMarkdown
     };
 }
 
 // モジュールエクスポート（Node.js環境）
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        jsonSchemaToMarkdown
+        jsonSchemaToMarkdown,
+        generateFullMarkdown
     };
 }

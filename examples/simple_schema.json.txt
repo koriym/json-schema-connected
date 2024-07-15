@@ -1,0 +1,22 @@
+{
+  "$comment": "This is a simple schema",
+  "$id": "customer.json",
+  "type": "object",
+  "properties": {
+    "customerId": { "type": "integer" },
+    "name": { "type": "string" },
+    "address": { "$ref": "address.json" }
+  }
+}
+{
+  "$id": "address.json",
+  "type": "object",
+  "properties": {
+    "addressId": { "type": "integer" },
+    "street": { "type": "string" },
+    "city": { "type": "string" },
+    "state": { "type": "string" },
+    "postalCode": { "type": "string" }
+  },
+  "required": ["addressId"]
+}

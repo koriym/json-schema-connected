@@ -1,0 +1,109 @@
+{
+  "$comment": "This is a medium-complexity social media platform schema set, including user, post, and comment structures with cross-references across multiple files."
+  "$id": "user.json",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The unique identifier for a user."
+    },
+    "username": {
+      "type": "string",
+      "description": "The user's display name.",
+      "minLength": 3,
+      "maxLength": 30
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "The user's email address."
+    },
+    "bio": {
+      "type": "string",
+      "description": "User's short biography.",
+      "maxLength": 160
+    },
+    "followers": {
+      "type": "array",
+      "items": {
+        "$ref": "user.json"
+      },
+      "description": "List of users following this user."
+    },
+    "posts": {
+      "type": "array",
+      "items": {
+        "$ref": "post.json"
+      },
+      "description": "List of user's posts."
+    }
+  },
+  "required": ["userId", "username", "email"]
+}
+{
+  "$id": "post.json",
+  "type": "object",
+  "properties": {
+    "postId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The unique identifier for a post."
+    },
+    "author": {
+      "$ref": "user.json",
+      "description": "The user who created the post."
+    },
+    "content": {
+      "type": "string",
+      "description": "The main content of the post.",
+      "maxLength": 280
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the post was created."
+    },
+    "likes": {
+      "type": "array",
+      "items": {
+        "$ref": "user.json"
+      },
+      "description": "List of users who liked the post."
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "$ref": "comment.json"
+      },
+      "description": "List of comments on the post."
+    }
+  },
+  "required": ["postId", "author", "content", "timestamp"]
+}
+{
+  "$id": "comment.json",
+  "type": "object",
+  "properties": {
+    "commentId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The unique identifier for a comment."
+    },
+    "author": {
+      "$ref": "user.json",
+      "description": "The user who wrote the comment."
+    },
+    "content": {
+      "type": "string",
+      "description": "The content of the comment.",
+      "maxLength": 140
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The date and time when the comment was created."
+    }
+  },
+  "required": ["commentId", "author", "content", "timestamp"]
+}
