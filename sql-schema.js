@@ -27,56 +27,40 @@ function resolveJsonSchemaRef(ref) {
 
 function getColumnType(property) {
     if (property.$ref) {
-        const refSchema = resolveJsonSchemaRef(property.$ref);
-        return refSchema && refSchema.type ? refSchema.type.toUpperCase() : "STRING";
+        return "REFERENCE";
     } else {
-        return property.type ? property.type.toUpperCase() : "STRING";
+        switch (property.type) {
+            case "integer": return "INT";
+            case "number": return "DECIMAL";
+            case "boolean": return "BOOLEAN";
+            case "array": return "JSON";
+            case "object": return "JSON";
+            default: return "STRING";
+        }
     }
 }
 
 function jsonSchemaToCreateTable(jsonSchema, tableName) {
-    const schema = JSON.parse(jsonSchema);
+    const schema = typeof jsonSchema === 'string' ? JSON.parse(jsonSchema) : jsonSchema;
     const properties = schema.properties || {};
     const required = schema.required || [];
     const foreignKeys = [];
+    const columns = [];
 
-    const columns = Object.keys(properties).map(prop => {
+    for (const [prop, propertySchema] of Object.entries(properties)) {
         const columnName = camelToSnake(prop);
-        let columnType = getColumnType(properties[prop]);
+        let columnType = getColumnType(propertySchema);
 
-        switch (columnType) {
-            case "INTEGER":
-                columnType = "INT";
-                break;
-            case "NUMBER":
-                columnType = "DECIMAL";
-                break;
-            case "BOOLEAN":
-                columnType = "BOOLEAN";
-                break;
-            case "NULL":
-                columnType = "NULL";
-                break;
-            case "ARRAY":
-                columnType = "JSON";
-                break;
-            case "OBJECT":
-                if (properties[prop].$ref) {
-                    const refSchema = resolveJsonSchemaRef(properties[prop].$ref);
-                    const refTableName = properties[prop].$ref.split('.')[0];
-                    const refColumnName = Object.keys(refSchema.properties).find(key => key.includes('Id'));
-                    foreignKeys.push(`FOREIGN KEY (${columnName}_id) REFERENCES ${refTableName}(${camelToSnake(refColumnName)})`);
-                    return `${columnName}_id INT`;
-                } else {
-                    columnType = "JSON";
-                }
-                break;
-            default:
-                columnType = "STRING";
+        if (columnType === "REFERENCE") {
+            const refSchema = resolveJsonSchemaRef(propertySchema.$ref);
+            const refTableName = propertySchema.$ref.split('.')[0];
+            const refColumnName = Object.keys(refSchema.properties).find(key => key.toLowerCase().includes('id')) || 'id';
+            foreignKeys.push(`FOREIGN KEY (${columnName}_id) REFERENCES ${refTableName}(${camelToSnake(refColumnName)})`);
+            columns.push(`${columnName}_id INT${required.includes(prop) ? ' NOT NULL' : ''}`);
+        } else {
+            columns.push(`${columnName} ${columnType}${required.includes(prop) ? ' NOT NULL' : ''}`);
         }
-        const columnDef = `${columnName} ${columnType}${required.includes(prop) ? ' NOT NULL' : ''}`;
-        return columnDef;
-    }).filter(col => col !== null);
+    }
 
     if (foreignKeys.length > 0) {
         columns.push(...foreignKeys);
@@ -111,18 +95,17 @@ function extractJsonSchemas(text) {
 
 function convertJsonSchemasToCreateTables(jsonSchemasText) {
     const jsonSchemas = extractJsonSchemas(jsonSchemasText);
-    const schemaRegistry = {};
     const createStatements = [];
 
     jsonSchemas.forEach(schemaText => {
         const schema = JSON.parse(schemaText.trim());
-        schemaRegistry[schema.$id] = schema;
+        registerJsonSchema(schema.$id, schema);
     });
 
     jsonSchemas.forEach(schemaText => {
         const schema = JSON.parse(schemaText.trim());
         const tableName = schema.$id.replace('.json', '');
-        createStatements.push(jsonSchemaToCreateTable(JSON.stringify(schema), tableName));
+        createStatements.push(jsonSchemaToCreateTable(schema, tableName));
     });
 
     return createStatements.join('\n\n');
