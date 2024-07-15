@@ -87,15 +87,14 @@
   <button onclick="convertJsonSchemasToSQL()" aria-label="Convert JSON Schemas to SQL">Convert to SQL</button>
   <button onclick="convertJsonSchemasToMarkdown()" aria-label="Convert JSON Schemas to Markdown">Convert to Markdown</button>
 </div>
+<div id="toggleContainer" style="display: none;">
+  <span id="option1Toggle" class="preview-toggle active" onclick="toggleView('option1')">option1</span>
+  |
+  <span id="option2Toggle" class="preview-toggle" onclick="toggleView('option2')">option2</span>
+</div>
 <div>
-  <label for="result" class="sr-only">Result:</label>
   <pre id="result"></pre>
-  <div class="preview-content" id="preview"></div>
-  <div id="previewToggleContainer" style="display: none;">
-    <span id="rawToggle" class="preview-toggle active" onclick="toggleView('raw')">raw</span>
-    |
-    <span id="previewToggle" class="preview-toggle" onclick="toggleView('preview')">preview</span>
-  </div>
+  <div id="option2Content" class="preview-content" style="display: none;"></div>
 </div>
 
 <script src="array-shape.js"></script>
@@ -135,8 +134,13 @@
     try {
       await loadAndRegisterSchemas(schemaTexts);
       const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
-      document.getElementById('result').textContent = arrayShapes.join('\n');
-      hidePreviewToggle();
+      const flatResult = arrayShapes.join('\n');
+      document.getElementById('result').textContent = flatResult;
+
+      const indentedResult = arrayShapes.map(shape => indentArrayShape(shape)).join('\n\n');
+      document.getElementById('option2Content').innerHTML = `<pre>${indentedResult}</pre>`;
+      document.getElementById('option2Content').classList.remove('preview-content');
+      showToggle('flat', 'indented');
     } catch (error) {
       console.error('Error converting schemas to array shapes:', error);
     }
@@ -150,7 +154,7 @@
       await loadAndRegisterSchemas(schemaTexts);
       const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
       document.getElementById('result').textContent = createTableSQL;
-      hidePreviewToggle();
+      hideToggle();
     } catch (error) {
       console.error('Error converting schemas to SQL:', error);
     }
@@ -164,10 +168,10 @@
       const schemas = await loadAndRegisterSchemas(schemaTexts);
       const baseDir = '';
       const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
-      document.getElementById('result').textContent = markdown;
-      document.getElementById('preview').innerHTML = marked(markdown);
-      showPreviewToggle();
-      toggleView('preview');
+      document.getElementById('option2Content').innerHTML = marked(markdown);
+      document.getElementById('option2Content').classList.add('preview-content');
+      showToggle('raw', 'preview');
+      toggleView('option2');
     } catch (error) {
       console.error('Error converting schemas to Markdown:', error);
     }
@@ -199,36 +203,46 @@
 
   window.schemaRegistry = {};
 
-  function showPreviewToggle() {
-    document.getElementById('previewToggleContainer').style.display = 'block';
+  function showToggle(option1, option2) {
+    const toggleContainer = document.getElementById('toggleContainer');
+    const option1Toggle = document.getElementById('option1Toggle');
+    const option2Toggle = document.getElementById('option2Toggle');
+
+    toggleContainer.style.display = 'block';
+    option1Toggle.textContent = option1;
+    option2Toggle.textContent = option2;
+    toggleView('option1');
   }
 
-  function hidePreviewToggle() {
-    document.getElementById('previewToggleContainer').style.display = 'none';
-    toggleView('raw');
+  function hideToggle() {
+    document.getElementById('toggleContainer').style.display = 'none';
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('option2Content').style.display = 'none';
   }
 
-  let currentView = 'raw';
-  function toggleView(view) {
-    if (view === currentView) return;
+  function toggleView(option) {
+    const result = document.getElementById('result');
+    const option2Content = document.getElementById('option2Content');
+    const option1Toggle = document.getElementById('option1Toggle');
+    const option2Toggle = document.getElementById('option2Toggle');
 
-    const rawContent = document.getElementById('result');
-    const previewContent = document.getElementById('preview');
-    const rawToggle = document.getElementById('rawToggle');
-    const previewToggle = document.getElementById('previewToggle');
-
-    if (view === 'raw') {
-      rawContent.style.display = 'block';
-      previewContent.style.display = 'none';
-      rawToggle.classList.add('active');
-      previewToggle.classList.remove('active');
+    if (option === 'option1') {
+      result.style.display = 'block';
+      option2Content.style.display = 'none';
+      option1Toggle.classList.add('active');
+      option2Toggle.classList.remove('active');
     } else {
-      rawContent.style.display = 'none';
-      previewContent.style.display = 'block';
-      rawToggle.classList.remove('active');
-      previewToggle.classList.add('active');
+      result.style.display = 'none';
+      option2Content.style.display = 'block';
+      option1Toggle.classList.remove('active');
+      option2Toggle.classList.add('active');
     }
-    currentView = view;
+  }
+
+  function indentArrayShape(shape) {
+    return shape.replace(/,/g, ',\n  ')
+            .replace(/{/g, '{\n  ')
+            .replace(/}/g, '\n}');
   }
 
   // サンプル切り替え用
@@ -237,11 +251,11 @@
     'examples/medium_schema.json.txt',
     'examples/complex_schema.json.txt',
     'examples/japanese_schema.json.txt',
-    // 必要に応じて追加のサンプルファイルを追加
   ];
   let currentExampleIndex = -1;
 
   function switchExample() {
+    document.getElementById('result').textContent = '';
     currentExampleIndex = (currentExampleIndex + 1) % examples.length;
     fetch(examples[currentExampleIndex])
             .then(response => response.text())
