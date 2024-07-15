@@ -15,7 +15,7 @@
 
 You can use the online version of this converter without installing anything on your local machine. Visit the following URL:
 
-[JSON Schema to Array Shape Converter](https://koriym.github.io/json-schema-connected/)
+[json-schema-connected Converter](https://koriym.github.io/json-schema-connected/)
 
 ## Installation
 
