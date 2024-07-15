@@ -1,9 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "meta-social-media.json",
   "$comment": "This is a medium-complexity social media platform schema set, including user, post, and comment structures with cross-references across multiple files."
-}
-{
   "$id": "user.json",
   "type": "object",
   "properties": {

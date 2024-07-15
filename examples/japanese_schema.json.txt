@@ -1,9 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "meta-ecommerce.json",
-  "$comment": "これは、複数のファイルにわたる$refの高度な使用と、ユーザー、住所、製品、注文、お金、評価、および注文項目のスキーマを含む複雑なEコマーススキーマセットです。json-schema-connectedの複雑な相互参照を解決し、相互接続されたデータモデルの包括的なドキュメントを生成する能力を示します。"
-}
-{
+  "$comment": "Japanese version: これは、複数のファイルにわたる$refの高度な使用と、ユーザー、住所、製品、注文、お金、評価、および注文項目のスキーマを含む複雑なEコマーススキーマセットです。json-schema-connectedの複雑な相互参照を解決し、相互接続されたデータモデルの包括的なドキュメントを生成する能力を示します。",
   "$id": "user.json",
   "type": "object",
   "properties": {

@@ -1,9 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "meta-ecommerce.json",
   "$comment": "This is a complex E-commerce schema set demonstrating advanced JSON Schema features and extensive use of $ref across multiple files. It includes user, address, product, order, money, rating, and orderItem schemas, showcasing intricate relationships and nested structures typical in real-world applications. This schema set highlights json-schema-connected's ability to resolve complex cross-references and generate comprehensive documentation for interconnected data models."
-}
-{
   "$id": "user.json",
   "type": "object",
   "properties": {
