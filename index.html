@@ -65,6 +65,10 @@
     .preview-content th {
       background-color: #f2f2f2;
     }
+    .indented {
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/2.0.3/marked.min.js"></script>
 </head>
@@ -93,10 +97,15 @@
     |
     <span id="previewToggle" class="preview-toggle" onclick="toggleView('preview')">preview</span>
   </div>
+  <div id="arrayShapeToggleContainer" style="display: none;">
+    <span id="flatToggle" class="preview-toggle active" onclick="toggleArrayShapeView('flat')">flat</span>
+    |
+    <span id="indentedToggle" class="preview-toggle" onclick="toggleArrayShapeView('indented')">indented</span>
+  </div>
   <label for="result" class="sr-only">Result:</label>
   <pre id="result"></pre>
   <div class="preview-content" id="preview"></div>
-
+  <pre id="indentedResult" style="display: none;"></pre>
 </div>
 
 <script src="array-shape.js"></script>
@@ -136,8 +145,15 @@
     try {
       await loadAndRegisterSchemas(schemaTexts);
       const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
-      document.getElementById('result').textContent = arrayShapes.join('\n');
+      const flatResult = arrayShapes.join('\n');
+      document.getElementById('result').textContent = flatResult;
+
+      // インデント付きの結果を生成
+      const indentedResult = arrayShapes.map(shape => indentArrayShape(shape)).join('\n\n');
+      document.getElementById('indentedResult').textContent = indentedResult;
+
       hidePreviewToggle();
+      showArrayShapeToggle();
     } catch (error) {
       console.error('Error converting schemas to array shapes:', error);
     }
@@ -152,6 +168,7 @@
       const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
       document.getElementById('result').textContent = createTableSQL;
       hidePreviewToggle();
+      hideArrayShapeToggle();
     } catch (error) {
       console.error('Error converting schemas to SQL:', error);
     }
@@ -169,6 +186,7 @@
       document.getElementById('preview').innerHTML = marked(markdown);
       toggleView('preview');
       showPreviewToggle();
+      hideArrayShapeToggle();
     } catch (error) {
       console.error('Error converting schemas to Markdown:', error);
     }
@@ -209,6 +227,14 @@
     toggleView('raw');
   }
 
+  function showArrayShapeToggle() {
+    document.getElementById('arrayShapeToggleContainer').style.display = 'block';
+  }
+
+  function hideArrayShapeToggle() {
+    document.getElementById('arrayShapeToggleContainer').style.display = 'none';
+  }
+
   let currentView = 'raw';
   function toggleView(view) {
     if (view === currentView) return;
@@ -230,6 +256,35 @@
       previewToggle.classList.add('active');
     }
     currentView = view;
+  }
+
+  let currentArrayShapeView = 'flat';
+  function toggleArrayShapeView(view) {
+    if (view === currentArrayShapeView) return;
+
+    const flatContent = document.getElementById('result');
+    const indentedContent = document.getElementById('indentedResult');
+    const flatToggle = document.getElementById('flatToggle');
+    const indentedToggle = document.getElementById('indentedToggle');
+
+    if (view === 'flat') {
+      flatContent.style.display = 'block';
+      indentedContent.style.display = 'none';
+      flatToggle.classList.add('active');
+      indentedToggle.classList.remove('active');
+    } else {
+      flatContent.style.display = 'none';
+      indentedContent.style.display = 'block';
+      flatToggle.classList.remove('active');
+      indentedToggle.classList.add('active');
+    }
+    currentArrayShapeView = view;
+  }
+
+  function indentArrayShape(shape) {
+    return shape.replace(/,/g, ',\n  ')
+            .replace(/{/g, '{\n  ')
+            .replace(/}/g, '\n}');
   }
 
   // サンプル切り替え用
