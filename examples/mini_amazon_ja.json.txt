@@ -2,6 +2,7 @@
   "$comment": "総合的マルチベンダーEコマースプラットフォームスキーマ: このスキーマセットは、Amazon風の大規模マルチベンダーEコマースプラットフォームの主要コンポーネントを網羅しています。ユーザー管理、製品カタログ、注文処理、在庫管理、マーケットプレイス機能、フルフィルメントロジスティクス、アフィリエイトプログラム、サブスクリプションサービスなど、現代の複雑なEコマースエコシステムの多様な側面をカバーしています。主要機能には、マルチベンダーマーケットプレイス、詳細な製品管理、包括的な注文処理、柔軟な支払いシステム、高度な在庫管理、フルフィルメントセンター統合、アフィリエイトマーケティング、サブスクリプションサービス、ユーザーおよび販売者プロファイル、カテゴリと評価システムが含まれます。このスキーマセットは、スタートアップから大規模Eコマース事業者まで、幅広い規模のオンラインマーケットプレイスの設計と実装に適用できます。",
 
   "$id": "user.json",
+  "$comment": "ユーザースキーマ: Eコマースプラットフォームのユーザー情報を管理します。個人情報、認証詳細、設定、注文履歴、ウィッシュリスト、カート情報などを含みます。",
   "type": "object",
   "properties": {
     "userId": {
@@ -187,6 +188,7 @@
 
 {
   "$id": "product.json",
+  "$comment": "製品スキーマ: 製品の詳細情報を定義します。名前、説明、価格、在庫状況、カテゴリー、画像、バリエーション、関連製品などの情報を含みます。",
   "type": "object",
   "properties": {
     "productId": {
@@ -351,6 +353,7 @@
 
 {
   "$id": "order.json",
+  "$comment": "注文スキーマ: 顧客の注文情報を管理します。注文項目、合計金額、配送情報、支払い方法、注文状態などの詳細を含みます。",
   "type": "object",
   "properties": {
     "coupons": {
@@ -437,6 +440,7 @@
 
 {
   "$id": "supplier.json",
+  "$comment": "サプライヤースキーマ: 製品の供給者情報を管理します。連絡先詳細、提供製品リスト、評価、支払い条件などの情報を含みます。",
   "type": "object",
   "properties": {
     "supplierId": {
@@ -522,6 +526,7 @@
 
 {
   "$id": "paymentMethod.json",
+  "$comment": "支払い方法スキーマ: ユーザーの支払い方法情報を管理します。クレジットカード、PayPal、銀行振込などの詳細を安全に保存します。",
   "type": "object",
   "properties": {
     "paymentMethodId": {
@@ -594,6 +599,7 @@
 
 {
   "$id": "discount.json",
+  "$comment": "割引スキーマ: 製品やサービスに適用される割引の詳細を定義します。割引タイプ、金額、適用条件などを含みます。",
   "type": "object",
   "properties": {
     "discountId": {
@@ -670,6 +676,7 @@
 
 {
   "$id": "coupon.json",
+  "$comment": "クーポンスキーマ: 注文に適用可能なクーポンの情報を管理します。コード、割引詳細、有効期限などを含みます。",
   "type": "object",
   "properties": {
     "couponId": {
@@ -744,6 +751,7 @@
 
 {
   "$id": "image.json",
+  "$comment": "画像スキーマ: 製品、ユーザー、カテゴリーなどに関連する画像情報を管理します。URL、サイズ、形式などのメタデータを含みます。",
   "type": "object",
   "properties": {
     "imageId": {
@@ -799,6 +807,7 @@
 
 {
   "$id": "cartItem.json",
+  "$comment": "カート項目スキーマ: ユーザーのショッピングカート内の個別アイテムを表します。製品、数量、価格情報などを含みます。",
   "type": "object",
   "properties": {
     "cartItemId": {
@@ -855,6 +864,7 @@
 
 {
   "$id": "review.json",
+  "$comment": "レビュースキーマ: 製品に対するユーザーレビューを管理します。評価、コメント、有用度投票などの情報を含みます。",
   "type": "object",
   "properties": {
     "reviewId": {
@@ -956,6 +966,7 @@
 
 {
   "$id": "notification.json",
+  "$comment": "通知スキーマ: ユーザーへの通知情報を管理します。タイプ、メッセージ、関連エンティティなどの詳細を含みます。",
   "type": "object",
   "properties": {
     "notificationId": {
@@ -1042,6 +1053,7 @@
 
 {
   "$id": "productVariation.json",
+  "$comment": "製品バリエーションスキーマ: 製品の異なるバージョン（サイズ、色など）を定義します。価格、在庫、画像などの固有情報を含みます。",
   "type": "object",
   "properties": {
     "variationId": {
@@ -1114,6 +1126,7 @@
 
 {
   "$id": "address.json",
+  "$comment": "住所スキーマ: ユーザーの配送先や請求先住所情報を管理します。住所詳細、タイプ、デフォルト設定などを含みます。",
   "type": "object",
   "properties": {
     "addressId": {
@@ -1188,6 +1201,7 @@
 
 {
   "$id": "money.json",
+  "$comment": "金額スキーマ: 通貨付きの金額を表現します。金額値と通貨コードを含み、一貫した金額表現を提供します。",
   "type": "object",
   "properties": {
     "amount": {
@@ -1212,6 +1226,7 @@
 
 {
   "$id": "rating.json",
+  "$comment": "評価スキーマ: 製品やサービスに対するユーザー評価を管理します。スコア、コメント、評価日などの情報を含みます。",
   "type": "object",
   "properties": {
     "ratingId": {
@@ -1270,6 +1285,7 @@
 
 {
   "$id": "orderItem.json",
+  "$comment": "注文項目スキーマ: 注文内の個別項目を表します。製品、数量、価格、割引情報などを含みます。",
   "type": "object",
   "properties": {
     "orderItemId": {
@@ -1384,6 +1400,7 @@
 
 {
   "$id": "shippingMethod.json",
+  "$comment": "配送方法スキーマ: 利用可能な配送オプションを定義します。名前、説明、コスト、推定配送時間などの情報を含みます。",
   "type": "object",
   "properties": {
     "shippingMethodId": {
@@ -1438,6 +1455,7 @@
 
 {
   "$id": "category.json",
+  "$comment": "カテゴリースキーマ: 製品カテゴリーの階層構造を定義します。名前、説明、親カテゴリー、関連製品などの情報を含みます。",
   "type": "object",
   "properties": {
     "categoryId": {
@@ -1522,6 +1540,7 @@
 
 {
   "$id": "wishlistItem.json",
+  "$comment": "ウィッシュリスト項目スキーマ: ユーザーのウィッシュリスト内の個別アイテムを表します。製品、追加日、メモなどの情報を含みます。",
   "type": "object",
   "properties": {
     "wishlistItemId": {
@@ -1572,6 +1591,7 @@
 
 {
   "$id": "promotion.json",
+  "$comment": "プロモーションスキーマ: マーケティングキャンペーンや特別オファーを定義します。タイプ、割引詳細、適用条件、有効期間などを含みます。",
   "type": "object",
   "properties": {
     "promotionId": {
@@ -1658,6 +1678,7 @@
 
 {
   "$id": "inventory.json",
+  "$comment": "在庫スキーマ: 製品の在庫状況を管理します。数量、場所、補充情報などの詳細を含みます。",
   "type": "object",
   "properties": {
     "inventoryId": {
@@ -1715,6 +1736,7 @@
 
 {
   "$id": "marketplace.json",
+  "$comment": "マーケットプレイススキーマ: マルチベンダープラットフォームの全体構造を定義します。販売者、カテゴリー、手数料率、ポリシーなどの情報を含みます。",
   "type": "object",
   "properties": {
     "marketplaceId": {
@@ -1780,6 +1802,7 @@
 
 {
   "$id": "seller.json",
+  "$comment": "販売者スキーマ: マーケットプレイス内の販売者情報を管理します。プロフィール、製品リスト、パフォーマンス指標などを含みます。",
   "type": "object",
   "properties": {
     "sellerId": {
@@ -1876,6 +1899,7 @@
 
 {
   "$id": "fulfillmentCenter.json",
+  "$comment": "フルフィルメントセンタースキーマ: 物流センターの情報を管理します。場所、容量、在庫アイテム、利用可能な配送方法などの詳細を含みます。",
   "type": "object",
   "properties": {
     "centerId": {
@@ -1923,6 +1947,7 @@
 
 {
   "$id": "affiliateProgram.json",
+  "$comment": "アフィリエイトプログラムスキーマ: アフィリエイトマーケティングプログラムの詳細を定義します。コミッション率、条件、参加アフィリエイトなどの情報を含みます。",
   "type": "object",
   "properties": {
     "programId": {
@@ -1965,6 +1990,7 @@
 
 {
   "$id": "affiliate.json",
+  "$comment": "アフィリエイトスキーマ: アフィリエイトパートナーの情報を管理します。プロフィール、収益、クリック数、支払い情報などを含みます。",
   "type": "object",
   "properties": {
     "affiliateId": {
@@ -2021,6 +2047,7 @@
 
 {
   "$id": "subscription.json",
+  "$comment": "サブスクリプションスキーマ: ユーザーのサブスクリプションプランを管理します。プラン詳細、開始日、終了日、ステータス、支払い情報などを含みます。"
   "type": "object",
   "properties": {
     "subscriptionId": {
