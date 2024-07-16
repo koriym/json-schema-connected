@@ -2,278 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>json-schema-connected Converter</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-    }
-    textarea, pre, .preview-content {
-      width: 100%;
-      margin-bottom: 10px;
-      overflow: auto;
-    }
-    textarea, pre {
-      resize: none;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-right: 10px;
-    }
-    pre, .preview-content {
-      background-color: #f4f4f4;
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      border: 0;
-    }
-    .preview-toggle {
-      cursor: pointer;
-      color: blue;
-      text-decoration: underline;
-    }
-    .preview-toggle.active {
-      text-decoration: none;
-      color: black;
-    }
-    .preview-content {
-      display: none;
-    }
-    .preview-content table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-bottom: 1em;
-    }
-    .preview-content th, .preview-content td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    .preview-content th {
-      background-color: #f2f2f2;
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/2.0.3/marked.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.2.12/marked.min.js"></script>
 </head>
 <body>
-<div class="header">
-  <img src="images/json-schema-connected.png" width="150px" alt="logo">
+<header>
+  <img src="images/json-schema-connected.png" width="150" alt="logo">
   <h1>json-schema-connected Converter</h1>
-</div>
-<p>
-  Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape, SQL, or Markdown.
-  See more <a href="#" id="exampleLink" onclick="switchExample(); return false;">example. &#8634;</a>
-</p>
-<div>
-  <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
-  <textarea id="jsonSchemas" rows="10" cols="50" oninput="autoResize(this)">
-  </textarea>
-</div>
-<div>
-  <button onclick="convertJsonSchemasToArrayShapes()" aria-label="Convert JSON Schemas to Array Shape">Convert to Array Shape</button>
-  <button onclick="convertJsonSchemasToSQL()" aria-label="Convert JSON Schemas to SQL">Convert to SQL</button>
-  <button onclick="convertJsonSchemasToMarkdown()" aria-label="Convert JSON Schemas to Markdown">Convert to Markdown</button>
-</div>
-<div id="toggleContainer" style="display: none;">
-  <span id="option1Toggle" class="preview-toggle active" onclick="toggleView('option1')">option1</span>
-  |
-  <span id="option2Toggle" class="preview-toggle" onclick="toggleView('option2')">option2</span>
-</div>
-<div>
-  <pre id="result"></pre>
-  <div id="option2Content" class="preview-content" style="display: none;"></div>
-</div>
+</header>
 
-<script src="schema-array-shape.js"></script>
-<script src="schema-sql.js"></script>
-<script src="schema-markdown.js"></script>
-<script>
-  function autoResize(textarea) {
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-  }
+<main>
+  <p>
+    Paste single or multiple JSON schemas below. The converter will resolve <code>$ref</code> and display each schema as an array shape, SQL, or Markdown.
+    <a href="#" id="exampleLink">See more example. &#8634;</a>
+  </p>
 
-  document.addEventListener("DOMContentLoaded", function() {
-    const textarea = document.getElementById('jsonSchemas');
-    autoResize(textarea);
-  });
+  <div class="input-area">
+    <label for="jsonSchemas" class="sr-only">JSON Schemas:</label>
+    <textarea id="jsonSchemas" rows="10" cols="50"></textarea>
+  </div>
 
-  function registerSchemas(schemas) {
-    schemas.forEach(schema => {
-      if (schema.$id) {
-        window.schemaRegistry[schema.$id] = schema;
-      } else {
-        console.error('Schema missing $id:', schema);
-      }
-    });
-  }
+  <div class="button-group">
+    <button id="convertArrayShape">Convert to Array Shape</button>
+    <button id="convertSQL">Convert to SQL</button>
+    <button id="convertMarkdown">Convert to Markdown</button>
+  </div>
 
-  async function loadAndRegisterSchemas(schemaTexts) {
-    const schemas = schemaTexts.map(text => JSON.parse(text.trim()));
-    registerSchemas(schemas);
-    return schemas;
-  }
+  <div id="toggleContainer" class="hidden">
+    <span id="option1Toggle" class="preview-toggle active">Raw</span>
+    |
+    <span id="option2Toggle" class="preview-toggle">Preview</span>
+  </div>
 
-  async function convertJsonSchemasToArrayShapes() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const schemaTexts = extractJsonSchemas(jsonSchemasText);
-
-    try {
-      await loadAndRegisterSchemas(schemaTexts);
-      const arrayShapes = window.arrayShape.convertJsonSchemasToArrayShapes(jsonSchemasText);
-      const flatResult = arrayShapes.join('\n');
-      document.getElementById('result').textContent = flatResult;
-
-      const indentedResult = arrayShapes.map(shape => indentArrayShape(shape)).join('\n\n');
-      document.getElementById('option2Content').innerHTML = `<pre>${indentedResult}</pre>`;
-      document.getElementById('option2Content').classList.remove('preview-content');
-      showToggle('flat', 'indented');
-    } catch (error) {
-      console.error('Error converting schemas to array shapes:', error);
-    }
-  }
-
-  async function convertJsonSchemasToSQL() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const schemaTexts = extractJsonSchemas(jsonSchemasText);
-
-    try {
-      await loadAndRegisterSchemas(schemaTexts);
-      const createTableSQL = window.sqlSchema.convertJsonSchemasToCreateTables(jsonSchemasText);
-      document.getElementById('result').textContent = createTableSQL + "\n\n -- Note: Adjust schema as needed for your specific requirements and database system.\n"
-      hideToggle();
-    } catch (error) {
-      console.error('Error converting schemas to SQL:', error);
-    }
-  }
-
-  async function convertJsonSchemasToMarkdown() {
-    const jsonSchemasText = document.getElementById('jsonSchemas').value;
-    const schemaTexts = extractJsonSchemas(jsonSchemasText);
-
-    try {
-      const schemas = await loadAndRegisterSchemas(schemaTexts);
-      const baseDir = '';
-      const markdown = schemas.map(schema => window.schemaMarkdown.jsonSchemaToMarkdown(schema, baseDir)).join('\n\n');
-      document.getElementById('option2Content').innerHTML = marked(markdown);
-      document.getElementById('option2Content').classList.add('preview-content');
-      showToggle('raw', 'preview');
-      toggleView('option2');
-    } catch (error) {
-      console.error('Error converting schemas to Markdown:', error);
-    }
-  }
-
-  function extractJsonSchemas(text) {
-    const jsonSchemas = [];
-    let stack = [];
-    let startIndex = null;
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-
-      if (char === '{') {
-        if (stack.length === 0) {
-          startIndex = i;
-        }
-        stack.push(char);
-      } else if (char === '}') {
-        if (stack.length === 1) {
-          jsonSchemas.push(text.slice(startIndex, i + 1));
-        }
-        stack.pop();
-      }
-    }
-
-    return jsonSchemas;
-  }
-
-  window.schemaRegistry = {};
-
-  function showToggle(option1, option2) {
-    const toggleContainer = document.getElementById('toggleContainer');
-    const option1Toggle = document.getElementById('option1Toggle');
-    const option2Toggle = document.getElementById('option2Toggle');
-
-    toggleContainer.style.display = 'block';
-    option1Toggle.textContent = option1;
-    option2Toggle.textContent = option2;
-    toggleView('option1');
-  }
-
-  function hideToggle() {
-    document.getElementById('toggleContainer').style.display = 'none';
-    document.getElementById('result').style.display = 'block';
-    document.getElementById('option2Content').style.display = 'none';
-  }
-
-  function toggleView(option) {
-    const result = document.getElementById('result');
-    const option2Content = document.getElementById('option2Content');
-    const option1Toggle = document.getElementById('option1Toggle');
-    const option2Toggle = document.getElementById('option2Toggle');
-
-    if (option === 'option1') {
-      result.style.display = 'block';
-      option2Content.style.display = 'none';
-      option1Toggle.classList.add('active');
-      option2Toggle.classList.remove('active');
-    } else {
-      result.style.display = 'none';
-      option2Content.style.display = 'block';
-      option1Toggle.classList.remove('active');
-      option2Toggle.classList.add('active');
-    }
-  }
-
-  function indentArrayShape(shape) {
-    return shape.replace(/,/g, ',\n  ')
-            .replace(/{/g, '{\n  ')
-            .replace(/}/g, '\n}');
-  }
-
-  // サンプル切り替え用
-  const examples = [
-    'examples/simple_schema.json.txt',
-    'examples/medium_schema.json.txt',
-    'examples/complex_schema.json.txt',
-    'examples/japanese_schema.json.txt',
-  ];
-  let currentExampleIndex = -1;
-
-  function switchExample() {
-    document.getElementById('result').textContent = '';
-    currentExampleIndex = (currentExampleIndex + 1) % examples.length;
-    fetch(examples[currentExampleIndex])
-            .then(response => response.text())
-            .then(data => {
-              document.getElementById('jsonSchemas').value = data;
-              autoResize(document.getElementById('jsonSchemas'));
-            })
-            .catch(error => console.error('Error loading example:', error));
-  }
-
-  // 初期化時にデフォルトのスキーマを読み込む
-  document.addEventListener("DOMContentLoaded", function() {
-    switchExample();
-  });
-</script>
+  <div id="resultContainer">
+    <pre id="result"></pre>
+    <div id="option2Content" class="preview-content"></div>
+  </div>
+</main>
 
 <footer>
   <p><a href="https://github.com/koriym/json-schema-connected" target="_blank">View on GitHub</a></p>
 </footer>
+
+<script src="schema-array-shape.js"></script>
+<script src="schema-sql.js"></script>
+<script src="schema-markdown.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
