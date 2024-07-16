@@ -1,7 +1,7 @@
 {
-  "$comment": "E-commerce Platform Schema Set: This comprehensive schema set defines the core components of a modern e-commerce platform. It includes schemas for user management, product catalog, order processing, reviews, categorization, address management, shopping cart functionality, and wishlists. The schema set is designed to support a scalable and feature-rich e-commerce system, covering essential aspects such as user profiles, product details, order tracking, customer reviews, and shopping experiences. It provides a solid foundation for building robust e-commerce applications with clear data structures and relationships."
+  "$comment": "E-commerce Platform Schema Set: This comprehensive schema set defines the core components of a modern e-commerce platform. It includes schemas for user management, product catalog, order processing, reviews, categorization, address management, shopping cart functionality, and wishlists. The schema set is designed to support a scalable and feature-rich e-commerce system, covering essential aspects such as user profiles, product details, order tracking, customer reviews, and shopping experiences. It provides a solid foundation for building robust e-commerce applications with clear data structures and relationships.",
+
   "$id": "user.json",
-  "$comment": "Represents a user in the e-commerce system, including personal information, authentication details, and preferences.",
   "type": "object",
   "properties": {
     "userId": {
@@ -713,7 +713,7 @@
 
 {
   "$id": "wishlistItem.json",
-  "$comment": "Represents an individual item in a user's wishlist, including the associated product and any notes."
+  "$comment": "Represents an individual item in a user's wishlist, including the associated product and any notes.",
   "type": "object",
   "properties": {
     "wishlistItemId": {
