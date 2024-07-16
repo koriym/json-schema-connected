@@ -165,7 +165,6 @@ function camelToSnake(camelStr) {
 if (typeof window !== 'undefined') {
     window.sqlSchema = {
         registerJsonSchema,
-        resolveJsonSchemaRef,
         jsonSchemaToCreateTable,
         extractJsonSchemas,
         convertJsonSchemasToCreateTables
@@ -176,7 +175,6 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         registerJsonSchema,
-        resolveJsonSchemaRef,
         jsonSchemaToCreateTable,
         extractJsonSchemas,
         convertJsonSchemasToCreateTables

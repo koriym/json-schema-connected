@@ -1,0 +1,118 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+textarea, pre, .preview-content {
+    width: 100%;
+    margin-bottom: 10px;
+    overflow: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+textarea, pre {
+    resize: vertical;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+pre, .preview-content {
+    background-color: #fbfbfb;
+
+    border: 1px solid #ddd;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+.preview-toggle {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+    padding: 2px 4px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+}
+.preview-toggle.active {
+    text-decoration: none;
+    color: black;
+}
+.preview-content {
+    display: none;
+}
+.hidden {
+    display: none;
+}
+#toggleContainer {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+/* Markdownプレビューのスタイリング */
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4,
+.preview-content h5,
+.preview-content h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    border-bottom: 0px solid #eee;
+    padding-bottom: 5px;
+}
+
+.preview-content p {
+    margin-bottom: 1em;
+}
+
+.preview-content ul,
+.preview-content ol {
+    margin-bottom: 1em;
+    padding-left: 2em;
+}
+
+.preview-content code {
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.preview-content pre {
+    padding: 10px;
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+.preview-content table {
+    border-collapse: collapse;
+    width: 90%;
+    margin-bottom: 1em;
+}
+
+.preview-content th,
+.preview-content td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.preview-content tr:nth-child(even) {
+    background-color: #f4f4f4;
+}
+
+.preview-content th {
+    font-weight: bold;
+}
