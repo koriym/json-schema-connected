@@ -177,7 +177,7 @@ const examples = [
     'examples/simple_schema.json.txt',
     'examples/medium_schema.json.txt',
     'examples/complex_schema.json.txt',
-    'examples/japanese_schema.json.txt',
+    'examples/mini_amazon_ja.json.txt',
 ];
 let currentExampleIndex = -1;
 

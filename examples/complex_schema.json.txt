@@ -1,5 +1,7 @@
 {
+  "$comment": "E-commerce Platform Schema Set: This comprehensive schema set defines the core components of a modern e-commerce platform. It includes schemas for user management, product catalog, order processing, reviews, categorization, address management, shopping cart functionality, and wishlists. The schema set is designed to support a scalable and feature-rich e-commerce system, covering essential aspects such as user profiles, product details, order tracking, customer reviews, and shopping experiences. It provides a solid foundation for building robust e-commerce applications with clear data structures and relationships."
   "$id": "user.json",
+  "$comment": "Represents a user in the e-commerce system, including personal information, authentication details, and preferences.",
   "type": "object",
   "properties": {
     "userId": {
@@ -79,6 +81,7 @@
 
 {
   "$id": "product.json",
+  "$comment": "Defines a product in the e-commerce catalog, including details such as name, price, inventory, and associated media.",
   "type": "object",
   "properties": {
     "productId": {
@@ -164,6 +167,7 @@
 
 {
   "$id": "order.json",
+  "$comment": "Represents a customer order, including order items, shipping details, and payment information.",
   "type": "object",
   "properties": {
     "orderId": {
@@ -243,6 +247,7 @@
 
 {
   "$id": "review.json",
+  "$comment": "Stores product reviews submitted by users, including ratings, content, and helpfulness votes.",
   "type": "object",
   "properties": {
     "reviewId": {
@@ -304,6 +309,7 @@
 
 {
   "$id": "category.json",
+  "$comment": "Defines product categories in a hierarchical structure, used for organizing the product catalog.",
   "type": "object",
   "properties": {
     "categoryId": {
@@ -353,6 +359,7 @@
 
 {
   "$id": "address.json",
+  "$comment": "Represents a shipping or billing address associated with a user or order.",
   "type": "object",
   "properties": {
     "addressId": {
@@ -441,6 +448,7 @@
 }
 {
   "$id": "orderItem.json",
+  "$comment": "Represents an individual item within an order, including product details and pricing at the time of purchase.",
   "type": "object",
   "properties": {
     "orderItemId": {
@@ -502,6 +510,7 @@
 
 {
   "$id": "image.json",
+  "$comment": "Stores image information for products, users, or categories, including URLs and metadata.",
   "type": "object",
   "properties": {
     "imageId": {
@@ -568,6 +577,7 @@
 
 {
   "$id": "cart.json",
+  "$comment": "Represents a user's shopping cart, containing cart items and total amount information.",
   "type": "object",
   "properties": {
     "cartId": {
@@ -615,6 +625,7 @@
 
 {
   "$id": "cartItem.json",
+  "$comment": "Represents an individual item in a user's shopping cart, including product and quantity information.",
   "type": "object",
   "properties": {
     "cartItemId": {
@@ -656,6 +667,7 @@
 
 {
   "$id": "wishlist.json",
+  "$comment": "Defines a user's wishlist, which can contain multiple wishlist items and be public or private.",
   "type": "object",
   "properties": {
     "wishlistId": {
@@ -701,6 +713,7 @@
 
 {
   "$id": "wishlistItem.json",
+  "$comment": "Represents an individual item in a user's wishlist, including the associated product and any notes."
   "type": "object",
   "properties": {
     "wishlistItemId": {
