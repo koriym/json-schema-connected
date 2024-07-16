@@ -9,7 +9,7 @@ This project provides a set of utilities for working with JSON Schemas. It inclu
 2. SQL Schema Generator
 3. Markdown Documentation Generator
 
-These utilities help you generate sample data, create SQL tables, and produce documentation from your JSON Schemas.
+These utilities help you generate array shape @var type, create SQL tables, and produce documentation from your JSON Schemas.
 
 ## Online Service
 
