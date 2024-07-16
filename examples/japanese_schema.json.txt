@@ -1,5 +1,6 @@
 {
-  "$comment": "Japanese version: これは、複数のファイルにわたる$refの高度な使用と、ユーザー、住所、製品、注文、お金、評価、および注文項目のスキーマを含む拡張された複雑なEコマーススキーマセットです。",
+  "$comment": "総合的マルチベンダーEコマースプラットフォームスキーマ: このスキーマセットは、Amazon風の大規模マルチベンダーEコマースプラットフォームの主要コンポーネントを網羅しています。ユーザー管理、製品カタログ、注文処理、在庫管理、マーケットプレイス機能、フルフィルメントロジスティクス、アフィリエイトプログラム、サブスクリプションサービスなど、現代の複雑なEコマースエコシステムの多様な側面をカバーしています。主要機能には、マルチベンダーマーケットプレイス、詳細な製品管理、包括的な注文処理、柔軟な支払いシステム、高度な在庫管理、フルフィルメントセンター統合、アフィリエイトマーケティング、サブスクリプションサービス、ユーザーおよび販売者プロファイル、カテゴリと評価システムが含まれます。このスキーマセットは、スタートアップから大規模Eコマース事業者まで、幅広い規模のオンラインマーケットプレイスの設計と実装に適用できます。",
+
   "$id": "user.json",
   "type": "object",
   "properties": {
@@ -160,9 +161,28 @@
       "type": "string",
       "format": "date-time",
       "description": "最後のログイン日時"
+    },
+    "isSeller": {
+      "type": "boolean",
+      "description": "ユーザーが販売者でもあるかどうか"
+    },
+    "sellerProfile": {
+      "$ref": "seller.json",
+      "description": "ユーザーが販売者の場合の販売者プロフィール"
+    },
+    "subscriptions": {
+      "type": "array",
+      "items": {
+        "$ref": "subscription.json"
+      },
+      "description": "ユーザーのアクティブなサブスクリプション"
+    },
+    "affiliateProfile": {
+      "$ref": "affiliate.json",
+      "description": "ユーザーがアフィリエイトの場合のプロフィール"
     }
   },
-  "required": ["userId", "username", "email", "fullName", "role", "createdAt"]
+  "required": ["userId", "username", "email", "fullName", "role", "createdAt", "isSeller"]
 }
 
 {
@@ -306,76 +326,33 @@
       "type": "string",
       "format": "date-time",
       "description": "製品の最終更新日時"
+    },
+    "seller": {
+      "$ref": "seller.json",
+      "description": "製品を販売する販売者"
+    },
+    "fulfillmentCenter": {
+      "$ref": "fulfillmentCenter.json",
+      "description": "製品が保管されているフルフィルメントセンター"
+    },
+    "isEligibleForPrime": {
+      "type": "boolean",
+      "description": "製品がプライム配送対象かどうか"
+    },
+    "affiliateLink": {
+      "type": "string",
+      "format": "uri",
+      "description": "製品のアフィリエイトリンク",
+      "maxLength": 2083
     }
   },
-  "required": ["productId", "name", "price", "category", "inventory", "createdAt"]
+  "required": ["productId", "name", "price", "category", "inventory", "createdAt", "seller"]
 }
 
 {
   "$id": "order.json",
   "type": "object",
   "properties": {
-    "orderId": {
-      "type": "string",
-      "format": "uuid",
-      "description": "注文の一意の識別子",
-      "maxLength": 36
-    },
-    "user": {
-      "$ref": "user.json",
-      "description": "注文を行ったユーザー"
-    },
-    "items": {
-      "type": "array",
-      "items": {
-        "$ref": "orderItem.json"
-      },
-      "description": "注文内の項目",
-      "minItems": 1
-    },
-    "totalAmount": {
-      "$ref": "money.json",
-      "description": "注文の合計金額"
-    },
-    "shippingAddress": {
-      "$ref": "address.json",
-      "description": "注文の配送先住所"
-    },
-    "billingAddress": {
-      "$ref": "address.json",
-      "description": "請求先住所"
-    },
-    "status": {
-      "type": "string",
-      "enum": ["pending", "processing", "shipped", "delivered", "cancelled", "refunded"],
-      "description": "注文の現在のステータス",
-      "maxLength": 20
-    },
-    "orderDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "注文が行われた日時"
-    },
-    "trackingNumber": {
-      "type": "string",
-      "description": "配送の追跡番号",
-      "maxLength": 50
-    },
-    "paymentMethod": {
-      "$ref": "paymentMethod.json",
-      "description": "支払い方法"
-    },
-    "discounts": {
-      "type": "array",
-      "items": {
-        "$ref": "discount.json"
-      },
-      "description": "適用された割引"
-    },
-    "notes": {
-      "type": "string",
-      "description": "注文に関するメモ"
-    },
     "coupons": {
       "type": "array",
       "items": {
@@ -431,6 +408,28 @@
       "type": "string",
       "format": "date-time",
       "description": "注文の最終更新日時"
+    },
+    "seller": {
+      "$ref": "seller.json",
+      "description": "注文を処理する販売者"
+    },
+    "fulfillmentCenter": {
+      "$ref": "fulfillmentCenter.json",
+      "description": "注文を処理するフルフィルメントセンター"
+    },
+    "affiliateInfo": {
+      "type": "object",
+      "properties": {
+        "affiliate": {
+          "$ref": "affiliate.json",
+          "description": "注文に関連するアフィリエイト"
+        },
+        "commission": {
+          "$ref": "money.json",
+          "description": "アフィリエイトの報酬額"
+        }
+      },
+      "description": "注文に関連するアフィリエイト情報"
     }
   },
   "required": ["orderId", "user", "items", "totalAmount", "shippingAddress", "billingAddress", "status", "orderDate", "paymentMethod"]
@@ -853,6 +852,7 @@
   },
   "required": ["cartItemId", "product", "quantity", "price", "addedAt"]
 }
+
 {
   "$id": "review.json",
   "type": "object",
@@ -1267,6 +1267,7 @@
   },
   "required": ["ratingId", "user", "score", "date", "product"]
 }
+
 {
   "$id": "orderItem.json",
   "type": "object",
@@ -1510,9 +1511,13 @@
         }
       },
       "description": "カテゴリーのメタデータ（SEO目的）"
+    },
+    "marketplace": {
+      "$ref": "marketplace.json",
+      "description": "カテゴリーが属するマーケットプレイス"
     }
   },
-  "required": ["categoryId", "name", "isActive", "slug"]
+  "required": ["categoryId", "name", "isActive", "slug", "marketplace"]
 }
 
 {
@@ -1706,4 +1711,372 @@
     }
   },
   "required": ["inventoryId", "product", "quantity", "isInStock"]
+}
+
+{
+  "$id": "marketplace.json",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "マーケットプレイスの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "マーケットプレイスの名前",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "マーケットプレイスの説明",
+      "maxLength": 500
+    },
+    "sellers": {
+      "type": "array",
+      "items": {
+        "$ref": "seller.json"
+      },
+      "description": "マーケットプレイスに参加している販売者のリスト"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "category.json"
+      },
+      "description": "マーケットプレイスのカテゴリー構造"
+    },
+    "commissionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "マーケットプレイスの手数料率（パーセンテージ）"
+    },
+    "policies": {
+      "type": "object",
+      "properties": {
+        "returns": {
+          "type": "string",
+          "description": "返品ポリシー",
+          "maxLength": 1000
+        },
+        "shipping": {
+          "type": "string",
+          "description": "配送ポリシー",
+          "maxLength": 1000
+        },
+        "disputes": {
+          "type": "string",
+          "description": "紛争解決ポリシー",
+          "maxLength": 1000
+        }
+      },
+      "description": "マーケットプレイスのポリシー"
+    }
+  },
+  "required": ["marketplaceId", "name", "commissionRate"]
+}
+
+{
+  "$id": "seller.json",
+  "type": "object",
+  "properties": {
+    "sellerId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "販売者の一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "販売者名",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "販売者の説明",
+      "maxLength": 500
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "販売者の平均評価"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "販売者が提供する製品のリスト"
+    },
+    "contactInformation": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "販売者の連絡先メールアドレス",
+          "maxLength": 255
+        },
+        "phone": {
+          "type": "string",
+          "description": "販売者の連絡先電話番号",
+          "maxLength": 20
+        }
+      },
+      "description": "販売者の連絡先情報"
+    },
+    "businessAddress": {
+      "$ref": "address.json",
+      "description": "販売者のビジネス住所"
+    },
+    "taxInformation": {
+      "type": "object",
+      "properties": {
+        "taxId": {
+          "type": "string",
+          "description": "販売者の税務ID",
+          "maxLength": 50
+        },
+        "taxClassification": {
+          "type": "string",
+          "description": "販売者の税務分類",
+          "maxLength": 50
+        }
+      },
+      "description": "販売者の税務情報"
+    },
+    "performanceMetrics": {
+      "type": "object",
+      "properties": {
+        "orderFulfillmentRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "注文履行率（パーセンテージ）"
+        },
+        "customerSatisfactionScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "顧客満足度スコア"
+        },
+        "responseTime": {
+          "type": "number",
+          "description": "平均応答時間（時間単位）"
+        }
+      },
+      "description": "販売者のパフォーマンス指標"
+    }
+  },
+  "required": ["sellerId", "name", "contactInformation", "businessAddress"]
+}
+
+{
+  "$id": "fulfillmentCenter.json",
+  "type": "object",
+  "properties": {
+    "centerId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "フルフィルメントセンターの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "フルフィルメントセンターの名前",
+      "maxLength": 100
+    },
+    "address": {
+      "$ref": "address.json",
+      "description": "フルフィルメントセンターの住所"
+    },
+    "capacity": {
+      "type": "integer",
+      "description": "保管可能な商品数",
+      "minimum": 0
+    },
+    "inventoryItems": {
+      "type": "array",
+      "items": {
+        "$ref": "inventory.json"
+      },
+      "description": "このセンターで保管されている在庫項目のリスト"
+    },
+    "shippingMethods": {
+      "type": "array",
+      "items": {
+        "$ref": "shippingMethod.json"
+      },
+      "description": "このセンターで利用可能な配送方法"
+    },
+    "operatingHours": {
+      "type": "string",
+      "description": "センターの営業時間",
+      "maxLength": 100
+    }
+  },
+  "required": ["centerId", "name", "address", "capacity"]
+}
+
+{
+  "$id": "affiliateProgram.json",
+  "type": "object",
+  "properties": {
+    "programId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "アフィリエイトプログラムの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "プログラム名",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "プログラムの説明",
+      "maxLength": 500
+    },
+    "commissionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "アフィリエイト報酬率（パーセンテージ）"
+    },
+    "terms": {
+      "type": "string",
+      "description": "プログラムの利用規約",
+      "maxLength": 1000
+    },
+    "affiliates": {
+      "type": "array",
+      "items": {
+        "$ref": "affiliate.json"
+      },
+      "description": "プログラムに参加しているアフィリエイトのリスト"
+    }
+  },
+  "required": ["programId", "name", "commissionRate", "terms"]
+}
+
+{
+  "$id": "affiliate.json",
+  "type": "object",
+  "properties": {
+    "affiliateId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "アフィリエイトの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "アフィリエイト名",
+      "maxLength": 100
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "アフィリエイトのウェブサイト",
+      "maxLength": 2083
+    },
+    "earnings": {
+      "$ref": "money.json",
+      "description": "累積報酬額"
+    },
+    "clickCount": {
+      "type": "integer",
+      "description": "アフィリエイトリンクのクリック数",
+      "minimum": 0
+    },
+    "conversionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "コンバージョン率（パーセンテージ）"
+    },
+    "paymentInfo": {
+      "type": "object",
+      "properties": {
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["bankTransfer", "paypal", "check"],
+          "description": "支払い方法"
+        },
+        "accountDetails": {
+          "type": "string",
+          "description": "支払い口座の詳細",
+          "maxLength": 500
+        }
+      },
+      "description": "アフィリエイトの支払い情報"
+    }
+  },
+  "required": ["affiliateId", "name", "website", "paymentInfo"]
+}
+
+{
+  "$id": "subscription.json",
+  "type": "object",
+  "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "サブスクリプションの一意の識別子",
+      "maxLength": 36
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "サブスクリプションを購入したユーザー"
+    },
+    "plan": {
+      "type": "string",
+      "enum": ["basic", "premium", "family"],
+      "description": "サブスクリプションプラン",
+      "maxLength": 20
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "サブスクリプション開始日"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "サブスクリプション終了日"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "canceled", "expired"],
+      "description": "サブスクリプションの状態",
+      "maxLength": 20
+    },
+    "autoRenew": {
+      "type": "boolean",
+      "description": "自動更新が有効かどうか"
+    },
+    "price": {
+      "$ref": "money.json",
+      "description": "サブスクリプションの価格"
+    },
+    "billingCycle": {
+      "type": "string",
+      "enum": ["monthly", "yearly"],
+      "description": "請求サイクル",
+      "maxLength": 20
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "description": "サブスクリプションに含まれる機能のリスト"
+    }
+  },
+  "required": ["subscriptionId", "user", "plan", "startDate", "status", "price", "billingCycle"]
 }
