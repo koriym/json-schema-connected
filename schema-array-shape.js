@@ -92,9 +92,7 @@ function convertJsonSchemasToArrayShapes(jsonSchemasText) {
 // グローバル変数として公開（ブラウザ環境）
 if (typeof window !== 'undefined') {
     window.arrayShape = {
-        registerJsonSchema,
         jsonSchemaToArrayShape,
-        extractJsonSchemas,
         convertJsonSchemasToArrayShapes
     };
 }
@@ -102,9 +100,7 @@ if (typeof window !== 'undefined') {
 // モジュールエクスポート（Node.js環境）
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        registerJsonSchema,
         jsonSchemaToArrayShape,
-        extractJsonSchemas,
         convertJsonSchemasToArrayShapes
     };
 }
