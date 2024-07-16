@@ -97,8 +97,8 @@ async function convertJsonSchemasToMarkdown() {
         const renderedMarkdown = marked.parse(rawMarkdown);
         document.getElementById('option2Content').innerHTML = renderedMarkdown;
 
-        showToggle('Raw', 'Preview');
-        toggleView('option1');
+        showToggle('Raw', 'Preview', );
+        toggleView('option2');
     } catch (error) {
         console.error('Error converting schemas to Markdown:', error);
         showError('Failed to convert schemas to Markdown. Please check your input.');

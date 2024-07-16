@@ -21,16 +21,11 @@ button {
     padding: 10px 20px;
     font-size: 16px;
     margin-right: 10px;
-    border: 1px solid #007bff;
-    background-color: #007bff;
-    color: white;
     cursor: pointer;
 }
-button:hover {
-    background-color: #0056b3;
-}
 pre, .preview-content {
-    background-color: #f8f9fa;
+    background-color: #fbfbfb;
+
     border: 1px solid #ddd;
 }
 .sr-only {
@@ -45,7 +40,7 @@ pre, .preview-content {
 }
 .preview-toggle {
     cursor: pointer;
-    color: #007bff;
+    color: blue;
     text-decoration: underline;
     padding: 2px 4px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -53,8 +48,7 @@ pre, .preview-content {
 }
 .preview-toggle.active {
     text-decoration: none;
-    color: #0056b3;
-    font-weight: bold;
+    color: black;
 }
 .preview-content {
     display: none;
@@ -65,7 +59,6 @@ pre, .preview-content {
 #toggleContainer {
     margin-top: 10px;
     margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
     padding-bottom: 10px;
 }
 
@@ -78,7 +71,7 @@ pre, .preview-content {
 .preview-content h6 {
     margin-top: 1em;
     margin-bottom: 0.5em;
-    border-bottom: 1px solid #eee;
+    border-bottom: 0px solid #eee;
     padding-bottom: 5px;
 }
 
@@ -93,23 +86,19 @@ pre, .preview-content {
 }
 
 .preview-content code {
-    background-color: #f1f3f5;
     padding: 2px 4px;
     border-radius: 3px;
-    border: 1px solid #e1e4e8;
 }
 
 .preview-content pre {
-    background-color: #f1f3f5;
     padding: 10px;
     border-radius: 3px;
     overflow-x: auto;
-    border: 1px solid #e1e4e8;
 }
 
 .preview-content table {
     border-collapse: collapse;
-    width: 100%;
+    width: 90%;
     margin-bottom: 1em;
 }
 
@@ -120,11 +109,10 @@ pre, .preview-content {
     text-align: left;
 }
 
-.preview-content th {
-    background-color: #f2f2f2;
-    font-weight: bold;
+.preview-content tr:nth-child(even) {
+    background-color: #f4f4f4;
 }
 
-.preview-content tr:nth-child(even) {
-    background-color: #f8f9fa;
+.preview-content th {
+    font-weight: bold;
 }
