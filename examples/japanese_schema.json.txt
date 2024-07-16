@@ -1,5 +1,6 @@
 {
-  "$comment": "Japanese version: これは、複数のファイルにわたる$refの高度な使用と、ユーザー、住所、製品、注文、お金、評価、および注文項目のスキーマを含む複雑なEコマーススキーマセットです。json-schema-connectedの複雑な相互参照を解決し、相互接続されたデータモデルの包括的なドキュメントを生成する能力を示します。",
+  "$comment": "総合的マルチベンダーEコマースプラットフォームスキーマ: このスキーマセットは、Amazon風の大規模マルチベンダーEコマースプラットフォームの主要コンポーネントを網羅しています。ユーザー管理、製品カタログ、注文処理、在庫管理、マーケットプレイス機能、フルフィルメントロジスティクス、アフィリエイトプログラム、サブスクリプションサービスなど、現代の複雑なEコマースエコシステムの多様な側面をカバーしています。主要機能には、マルチベンダーマーケットプレイス、詳細な製品管理、包括的な注文処理、柔軟な支払いシステム、高度な在庫管理、フルフィルメントセンター統合、アフィリエイトマーケティング、サブスクリプションサービス、ユーザーおよび販売者プロファイル、カテゴリと評価システムが含まれます。このスキーマセットは、スタートアップから大規模Eコマース事業者まで、幅広い規模のオンラインマーケットプレイスの設計と実装に適用できます。",
+
   "$id": "user.json",
   "type": "object",
   "properties": {
@@ -52,6 +53,12 @@
           "format": "uri",
           "description": "Instagramのプロフィールリンク",
           "maxLength": 2083
+        },
+        "linkedin": {
+          "type": "string",
+          "format": "uri",
+          "description": "LinkedInのプロフィールリンク",
+          "maxLength": 2083
         }
       },
       "additionalProperties": false,
@@ -59,7 +66,7 @@
     },
     "role": {
       "type": "string",
-      "enum": ["customer", "admin", "merchant"],
+      "enum": ["customer", "admin", "merchant", "support"],
       "description": "システムにおけるユーザーの役割",
       "maxLength": 20
     },
@@ -118,53 +125,66 @@
         "$ref": "notification.json"
       },
       "description": "ユーザーへの通知"
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["en", "ja", "es", "fr", "de"],
+          "description": "ユーザーの言語設定",
+          "maxLength": 2
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["USD", "EUR", "JPY", "GBP"],
+          "description": "ユーザーの通貨設定",
+          "maxLength": 3
+        },
+        "emailNotifications": {
+          "type": "boolean",
+          "description": "メール通知の設定"
+        },
+        "pushNotifications": {
+          "type": "boolean",
+          "description": "プッシュ通知の設定"
+        }
+      },
+      "description": "ユーザーの設定"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ユーザーアカウントの作成日時"
+    },
+    "lastLoginAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "最後のログイン日時"
+    },
+    "isSeller": {
+      "type": "boolean",
+      "description": "ユーザーが販売者でもあるかどうか"
+    },
+    "sellerProfile": {
+      "$ref": "seller.json",
+      "description": "ユーザーが販売者の場合の販売者プロフィール"
+    },
+    "subscriptions": {
+      "type": "array",
+      "items": {
+        "$ref": "subscription.json"
+      },
+      "description": "ユーザーのアクティブなサブスクリプション"
+    },
+    "affiliateProfile": {
+      "$ref": "affiliate.json",
+      "description": "ユーザーがアフィリエイトの場合のプロフィール"
     }
   },
-  "required": ["userId", "username", "email", "fullName", "role"]
+  "required": ["userId", "username", "email", "fullName", "role", "createdAt", "isSeller"]
 }
-{
-  "$id": "address.json",
-  "type": "object",
-  "properties": {
-    "addressId": {
-      "type": "string",
-      "format": "uuid",
-      "description": "住所の一意の識別子",
-      "maxLength": 36
-    },
-    "street": {
-      "type": "string",
-      "description": "通り名と番号",
-      "minLength": 1,
-      "maxLength": 100
-    },
-    "city": {
-      "type": "string",
-      "description": "都市名",
-      "minLength": 1,
-      "maxLength": 50
-    },
-    "state": {
-      "type": "string",
-      "description": "州または県名",
-      "minLength": 1,
-      "maxLength": 50
-    },
-    "postalCode": {
-      "type": "string",
-      "description": "郵便番号",
-      "pattern": "^[0-9]{5}(-[0-9]{4})?$",
-      "maxLength": 10
-    },
-    "country": {
-      "type": "string",
-      "description": "国名",
-      "minLength": 1,
-      "maxLength": 50
-    }
-  },
-  "required": ["addressId", "street", "city", "state", "postalCode", "country"]
-}
+
 {
   "$id": "product.json",
   "type": "object",
@@ -192,6 +212,11 @@
     "category": {
       "type": "string",
       "description": "製品のカテゴリー",
+      "maxLength": 50
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "製品のサブカテゴリー",
       "maxLength": 50
     },
     "inventory": {
@@ -240,149 +265,176 @@
         "$ref": "productVariation.json"
       },
       "description": "製品のバリエーション（例：サイズ、色）"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "description": "製品に関連するタグ"
+    },
+    "brand": {
+      "type": "string",
+      "description": "製品のブランド名",
+      "maxLength": 100
+    },
+    "weight": {
+      "type": "number",
+      "description": "製品の重量（キログラム）",
+      "minimum": 0
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number",
+          "description": "製品の長さ（センチメートル）",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "description": "製品の幅（センチメートル）",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "description": "製品の高さ（センチメートル）",
+          "minimum": 0
+        }
+      },
+      "description": "製品の寸法"
+    },
+    "isCustomizable": {
+      "type": "boolean",
+      "description": "製品がカスタマイズ可能かどうか"
+    },
+    "customizationOptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "description": "カスタマイズ可能な場合の選択肢"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "製品の登録日時"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "製品の最終更新日時"
+    },
+    "seller": {
+      "$ref": "seller.json",
+      "description": "製品を販売する販売者"
+    },
+    "fulfillmentCenter": {
+      "$ref": "fulfillmentCenter.json",
+      "description": "製品が保管されているフルフィルメントセンター"
+    },
+    "isEligibleForPrime": {
+      "type": "boolean",
+      "description": "製品がプライム配送対象かどうか"
+    },
+    "affiliateLink": {
+      "type": "string",
+      "format": "uri",
+      "description": "製品のアフィリエイトリンク",
+      "maxLength": 2083
     }
   },
-  "required": ["productId", "name", "price", "category", "inventory"]
+  "required": ["productId", "name", "price", "category", "inventory", "createdAt", "seller"]
 }
+
 {
   "$id": "order.json",
   "type": "object",
   "properties": {
-    "orderId": {
-      "type": "string",
-      "format": "uuid",
-      "description": "注文の一意の識別子",
-      "maxLength": 36
-    },
-    "user": {
-      "$ref": "user.json",
-      "description": "注文を行ったユーザー"
-    },
-    "items": {
-      "type": "array",
-      "items": {
-        "$ref": "orderItem.json"
-      },
-      "description": "注文内の項目",
-      "minItems": 1
-    },
-    "totalAmount": {
-      "$ref": "money.json",
-      "description": "注文の合計金額"
-    },
-    "shippingAddress": {
-      "$ref": "address.json",
-      "description": "注文の配送先住所"
-    },
-    "billingAddress": {
-      "$ref": "address.json",
-      "description": "請求先住所"
-    },
-    "status": {
-      "type": "string",
-      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
-      "description": "注文の現在のステータス",
-      "maxLength": 20
-    },
-    "orderDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "注文が行われた日時"
-    },
-    "trackingNumber": {
-      "type": "string",
-      "description": "配送の追跡番号",
-      "maxLength": 50
-    },
-    "paymentMethod": {
-      "$ref": "paymentMethod.json",
-      "description": "支払い方法"
-    },
-    "discounts": {
-      "type": "array",
-      "items": {
-        "$ref": "discount.json"
-      },
-      "description": "適用された割引"
-    },
-    "notes": {
-      "type": "string",
-      "description": "注文に関するメモ"
-    },
     "coupons": {
       "type": "array",
       "items": {
         "$ref": "coupon.json"
       },
       "description": "注文に適用されたクーポン"
-    }
-  },
-  "required": ["orderId", "user", "items", "totalAmount", "shippingAddress", "billingAddress", "status", "orderDate"]
-}
-{
-  "$id": "money.json",
-  "type": "object",
-  "properties": {
-    "amount": {
-      "type": "number",
-      "description": "金額",
-      "minimum": 0
     },
-    "currency": {
-      "type": "string",
-      "enum": ["USD", "EUR", "JPY"],
-      "description": "金額の通貨",
-      "maxLength": 3
-    }
-  },
-  "required": ["amount", "currency"]
-}
-{
-  "$id": "rating.json",
-  "type": "object",
-  "properties": {
-    "user": {
-      "$ref": "user.json",
-      "description": "評価を提供したユーザー"
+    "shippingMethod": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "配送方法の名前",
+          "maxLength": 50
+        },
+        "cost": {
+          "$ref": "money.json",
+          "description": "配送料金"
+        },
+        "estimatedDeliveryDate": {
+          "type": "string",
+          "format": "date",
+          "description": "予想配達日"
+        }
+      },
+      "required": ["name", "cost"],
+      "description": "選択された配送方法"
     },
-    "score": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 5,
-      "description": "評価スコア（1-5）"
+    "taxAmount": {
+      "$ref": "money.json",
+      "description": "注文に適用される税金額"
     },
-    "comment": {
-      "type": "string",
-      "description": "評価に関連するコメント"
+    "giftWrapping": {
+      "type": "object",
+      "properties": {
+        "isGiftWrapped": {
+          "type": "boolean",
+          "description": "ギフトラッピングが適用されているかどうか"
+        },
+        "message": {
+          "type": "string",
+          "description": "ギフトメッセージ",
+          "maxLength": 500
+        },
+        "cost": {
+          "$ref": "money.json",
+          "description": "ギフトラッピングの料金"
+        }
+      },
+      "description": "ギフトラッピングの情報"
     },
-    "date": {
+    "updatedAt": {
       "type": "string",
       "format": "date-time",
-      "description": "評価が提出された日時"
+      "description": "注文の最終更新日時"
+    },
+    "seller": {
+      "$ref": "seller.json",
+      "description": "注文を処理する販売者"
+    },
+    "fulfillmentCenter": {
+      "$ref": "fulfillmentCenter.json",
+      "description": "注文を処理するフルフィルメントセンター"
+    },
+    "affiliateInfo": {
+      "type": "object",
+      "properties": {
+        "affiliate": {
+          "$ref": "affiliate.json",
+          "description": "注文に関連するアフィリエイト"
+        },
+        "commission": {
+          "$ref": "money.json",
+          "description": "アフィリエイトの報酬額"
+        }
+      },
+      "description": "注文に関連するアフィリエイト情報"
     }
   },
-  "required": ["user", "score", "date"]
+  "required": ["orderId", "user", "items", "totalAmount", "shippingAddress", "billingAddress", "status", "orderDate", "paymentMethod"]
 }
-{
-  "$id": "orderItem.json",
-  "type": "object",
-  "properties": {
-    "product": {
-      "$ref": "product.json",
-      "description": "注文内の製品"
-    },
-    "quantity": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "注文された製品の数量"
-    },
-    "price": {
-      "$ref": "money.json",
-      "description": "注文時の製品の価格"
-    }
-  },
-  "required": ["product", "quantity", "price"]
-}
+
 {
   "$id": "supplier.json",
   "type": "object",
@@ -416,13 +468,58 @@
         "address": {
           "$ref": "address.json",
           "description": "供給者の住所"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "供給者のウェブサイト",
+          "maxLength": 2083
         }
       },
       "required": ["phone", "email", "address"]
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "供給者が提供する製品リスト"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "供給者の平均評価"
+    },
+    "paymentTerms": {
+      "type": "string",
+      "description": "支払い条件",
+      "maxLength": 500
+    },
+    "leadTime": {
+      "type": "integer",
+      "description": "平均リードタイム（日数）",
+      "minimum": 0
+    },
+    "minimumOrderQuantity": {
+      "type": "integer",
+      "description": "最小注文数量",
+      "minimum": 1
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "供給者の登録日時"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "供給者情報の最終更新日時"
     }
   },
-  "required": ["supplierId", "name", "contact"]
+  "required": ["supplierId", "name", "contact", "createdAt"]
 }
+
 {
   "$id": "paymentMethod.json",
   "type": "object",
@@ -435,7 +532,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["creditCard", "paypal", "bankTransfer"],
+      "enum": ["creditCard", "debitCard", "paypal", "bankTransfer", "applePay", "googlePay"],
       "description": "支払い方法の種類",
       "maxLength": 20
     },
@@ -444,8 +541,8 @@
       "properties": {
         "cardNumber": {
           "type": "string",
-          "description": "クレジットカード番号",
-          "pattern": "^[0-9]{16}$",
+          "description": "クレジットカード番号（マスク処理済み）",
+          "pattern": "^[*]{12}[0-9]{4}$",
           "maxLength": 16
         },
         "expiryDate": {
@@ -453,10 +550,20 @@
           "format": "date",
           "description": "クレジットカードの有効期限"
         },
+        "cardHolderName": {
+          "type": "string",
+          "description": "カード所有者の名前",
+          "maxLength": 100
+        },
         "bankAccount": {
           "type": "string",
-          "description": "銀行口座番号",
+          "description": "銀行口座番号（マスク処理済み）",
           "maxLength": 50
+        },
+        "bankName": {
+          "type": "string",
+          "description": "銀行名",
+          "maxLength": 100
         },
         "paypalEmail": {
           "type": "string",
@@ -465,11 +572,26 @@
           "maxLength": 255
         }
       },
-      "required": ["cardNumber", "expiryDate"]
+      "required": ["cardNumber", "expiryDate", "cardHolderName"]
+    },
+    "isDefault": {
+      "type": "boolean",
+      "description": "デフォルトの支払い方法かどうか"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "支払い方法の登録日時"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "支払い方法の最終更新日時"
     }
   },
-  "required": ["paymentMethodId", "type", "details"]
+  "required": ["paymentMethodId", "type", "details", "createdAt"]
 }
+
 {
   "$id": "discount.json",
   "type": "object",
@@ -491,7 +613,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["percentage", "fixed"],
+      "enum": ["percentage", "fixed", "buyXgetY"],
       "description": "割引の種類",
       "maxLength": 20
     },
@@ -504,10 +626,48 @@
       "type": "string",
       "format": "date-time",
       "description": "割引の有効終了日"
+    },
+    "minimumPurchaseAmount": {
+      "$ref": "money.json",
+      "description": "割引適用の最小購入金額"
+    },
+    "maximumDiscountAmount": {
+      "$ref": "money.json",
+      "description": "最大割引金額（パーセンテージ割引の場合）"
+    },
+    "applicableProducts": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "割引が適用される製品リスト"
+    },
+    "applicableCategories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "description": "割引が適用されるカテゴリーリスト"
+    },
+    "usageLimit": {
+      "type": "integer",
+      "description": "割引の使用可能回数",
+      "minimum": 0
+    },
+    "usageCount": {
+      "type": "integer",
+      "description": "割引の使用回数",
+      "minimum": 0
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "割引が現在アクティブかどうか"
     }
   },
-  "required": ["discountId", "description", "amount", "type", "validFrom", "validTo"]
+  "required": ["discountId", "description", "amount", "type", "validFrom", "validTo", "isActive"]
 }
+
 {
   "$id": "coupon.json",
   "type": "object",
@@ -541,10 +701,47 @@
       "type": "string",
       "format": "date-time",
       "description": "クーポンの有効終了日"
+    },
+    "isOneTimeUse": {
+      "type": "boolean",
+      "description": "クーポンが1回限り使用可能かどうか"
+    },
+    "usageLimit": {
+      "type": "integer",
+      "description": "クーポンの使用可能回数",
+      "minimum": 0
+    },
+    "usageCount": {
+      "type": "integer",
+      "description": "クーポンの使用回数",
+      "minimum": 0
+    },
+    "minimumPurchaseAmount": {
+      "$ref": "money.json",
+      "description": "クーポン適用の最小購入金額"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "クーポンが現在アクティブかどうか"
+    },
+    "createdBy": {
+      "$ref": "user.json",
+      "description": "クーポンを作成した管理者"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "クーポンの作成日時"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "クーポンの最終更新日時"
     }
   },
-  "required": ["couponId", "code", "discount", "validFrom", "validTo"]
+  "required": ["couponId", "code", "discount", "validFrom", "validTo", "isActive", "createdAt"]
 }
+
 {
   "$id": "image.json",
   "type": "object",
@@ -565,14 +762,51 @@
       "type": "string",
       "description": "画像の代替テキスト",
       "maxLength": 255
+    },
+    "width": {
+      "type": "integer",
+      "description": "画像の幅（ピクセル）",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "description": "画像の高さ（ピクセル）",
+      "minimum": 1
+    },
+    "size": {
+      "type": "integer",
+      "description": "画像のファイルサイズ（バイト）",
+      "minimum": 0
+    },
+    "format": {
+      "type": "string",
+      "enum": ["jpg", "jpeg", "png", "gif", "webp"],
+      "description": "画像のファイル形式",
+      "maxLength": 10
+    },
+    "isPrimary": {
+      "type": "boolean",
+      "description": "製品の主要画像かどうか"
+    },
+    "uploadedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "画像のアップロード日時"
     }
   },
-  "required": ["imageId", "url"]
+  "required": ["imageId", "url", "width", "height", "format", "uploadedAt"]
 }
+
 {
   "$id": "cartItem.json",
   "type": "object",
   "properties": {
+    "cartItemId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "カート項目の一意の識別子",
+      "maxLength": 36
+    },
     "product": {
       "$ref": "product.json",
       "description": "カート内の製品"
@@ -585,10 +819,40 @@
     "price": {
       "$ref": "money.json",
       "description": "製品の現在の価格"
+    },
+    "selectedVariations": {
+      "type": "array",
+      "items": {
+        "$ref": "productVariation.json"
+      },
+      "description": "選択された製品のバリエーション"
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "カートに追加された日時"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "カート項目の最終更新日時"
+    },
+    "appliedDiscounts": {
+      "type": "array",
+      "items": {
+        "$ref": "discount.json"
+      },
+      "description": "この項目に適用された割引"
+    },
+    "notes": {
+      "type": "string",
+      "description": "カート項目に関する特記事項",
+      "maxLength": 500
     }
   },
-  "required": ["product", "quantity", "price"]
+  "required": ["cartItemId", "product", "quantity", "price", "addedAt"]
 }
+
 {
   "$id": "review.json",
   "type": "object",
@@ -619,10 +883,77 @@
       "type": "string",
       "format": "date-time",
       "description": "レビューの投稿日"
+    },
+    "helpfulVotes": {
+      "type": "integer",
+      "description": "レビューが役立つと評価した人数",
+      "minimum": 0
+    },
+    "verifiedPurchase": {
+      "type": "boolean",
+      "description": "レビュアーが実際に製品を購入したかどうか"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "$ref": "image.json"
+      },
+      "description": "レビューに添付された画像"
+    },
+    "pros": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "description": "製品の長所リスト"
+    },
+    "cons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "description": "製品の短所リスト"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "レビューの最終更新日時"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected"],
+      "description": "レビューの承認状態",
+      "maxLength": 20
+    },
+    "replies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "user.json",
+            "description": "返信したユーザー"
+          },
+          "comment": {
+            "type": "string",
+            "description": "返信内容"
+          },
+          "replyDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "返信日時"
+          }
+        },
+        "required": ["user", "comment", "replyDate"]
+      },
+      "description": "レビューへの返信"
     }
   },
-  "required": ["reviewId", "user", "product", "rating", "reviewDate"]
+  "required": ["reviewId", "user", "product", "rating", "comment", "reviewDate", "verifiedPurchase", "status"]
 }
+
 {
   "$id": "notification.json",
   "type": "object",
@@ -635,7 +966,7 @@
     },
     "type": {
       "type": "string",
-      "enum": ["orderUpdate", "promotion", "reminder"],
+      "enum": ["orderUpdate", "promotion", "reminder", "stockAlert", "priceChange", "newReview"],
       "description": "通知の種類",
       "maxLength": 20
     },
@@ -652,10 +983,63 @@
       "type": "string",
       "format": "date-time",
       "description": "通知の日時"
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "通知の宛先ユーザー"
+    },
+    "relatedEntity": {
+      "type": "object",
+      "properties": {
+        "entityType": {
+          "type": "string",
+          "enum": ["order", "product", "review"],
+          "description": "関連エンティティの種類",
+          "maxLength": 20
+        },
+        "entityId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "関連エンティティのID",
+          "maxLength": 36
+        }
+      },
+      "required": ["entityType", "entityId"],
+      "description": "通知に関連するエンティティ"
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["link", "button"],
+          "description": "アクションの種類",
+          "maxLength": 20
+        },
+        "text": {
+          "type": "string",
+          "description": "アクションのテキスト",
+          "maxLength": 50
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "アクションのURL",
+          "maxLength": 2083
+        }
+      },
+      "required": ["type", "text", "url"],
+      "description": "通知に関連するアクション"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "通知の有効期限"
     }
   },
-  "required": ["notificationId", "type", "message", "date"]
+  "required": ["notificationId", "type", "message", "date", "user"]
 }
+
 {
   "$id": "productVariation.json",
   "type": "object",
@@ -679,8 +1063,1020 @@
     "additionalPrice": {
       "$ref": "money.json",
       "description": "バリエーションに追加される価格"
+    },
+    "sku": {
+      "type": "string",
+      "description": "バリエーション固有の在庫管理番号",
+      "maxLength": 50
+    },
+    "inventory": {
+      "type": "integer",
+      "description": "このバリエーションの在庫数",
+      "minimum": 0
+    },
+    "image": {
+      "$ref": "image.json",
+      "description": "バリエーション固有の画像"
+    },
+    "weight": {
+      "type": "number",
+      "description": "バリエーションの重量（キログラム）",
+      "minimum": 0
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number",
+          "description": "バリエーションの長さ（センチメートル）",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "description": "バリエーションの幅（センチメートル）",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "description": "バリエーションの高さ（センチメートル）",
+          "minimum": 0
+        }
+      },
+      "description": "バリエーションの寸法"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "このバリエーションが現在アクティブかどうか"
     }
   },
-  "required": ["variationId", "name", "value"]
+  "required": ["variationId", "name", "value", "sku", "inventory", "isActive"]
 }
 
+{
+  "$id": "address.json",
+  "type": "object",
+  "properties": {
+    "addressId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "住所の一意の識別子",
+      "maxLength": 36
+    },
+    "street": {
+      "type": "string",
+      "description": "通り名と番号",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "city": {
+      "type": "string",
+      "description": "都市名",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "state": {
+      "type": "string",
+      "description": "州または県名",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "postalCode": {
+      "type": "string",
+      "description": "郵便番号",
+      "pattern": "^[0-9]{5}(-[0-9]{4})?$",
+      "maxLength": 10
+    },
+    "country": {
+      "type": "string",
+      "description": "国名",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "type": {
+      "type": "string",
+      "enum": ["shipping", "billing", "both"],
+      "description": "住所の種類",
+      "maxLength": 20
+    },
+    "isDefault": {
+      "type": "boolean",
+      "description": "デフォルトの住所かどうか"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "この住所に関連する電話番号",
+      "maxLength": 20
+    },
+    "instructions": {
+      "type": "string",
+      "description": "配送指示",
+      "maxLength": 500
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "住所の登録日時"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "住所の最終更新日時"
+    }
+  },
+  "required": ["addressId", "street", "city", "state", "postalCode", "country", "type"]
+}
+
+{
+  "$id": "money.json",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "description": "金額",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "JPY", "GBP", "AUD", "CAD"],
+      "description": "金額の通貨",
+      "maxLength": 3
+    },
+    "formattedAmount": {
+      "type": "string",
+      "description": "フォーマットされた金額（例：$10.99）",
+      "maxLength": 20
+    }
+  },
+  "required": ["amount", "currency"]
+}
+
+{
+  "$id": "rating.json",
+  "type": "object",
+  "properties": {
+    "ratingId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "評価の一意の識別子",
+      "maxLength": 36
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "評価を提供したユーザー"
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "評価スコア（1-5）"
+    },
+    "comment": {
+      "type": "string",
+      "description": "評価に関連するコメント"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "評価が提出された日時"
+    },
+    "product": {
+      "$ref": "product.json",
+      "description": "評価された製品"
+    },
+    "helpfulVotes": {
+      "type": "integer",
+      "description": "この評価が役立つと評価した人数",
+      "minimum": 0
+    },
+    "verifiedPurchase": {
+      "type": "boolean",
+      "description": "評価者が実際に製品を購入したかどうか"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "$ref": "image.json"
+      },
+      "description": "評価に添付された画像"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "評価の最終更新日時"
+    }
+  },
+  "required": ["ratingId", "user", "score", "date", "product"]
+}
+
+{
+  "$id": "orderItem.json",
+  "type": "object",
+  "properties": {
+    "orderItemId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "注文項目の一意の識別子",
+      "maxLength": 36
+    },
+    "product": {
+      "$ref": "product.json",
+      "description": "注文内の製品"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "注文された製品の数量"
+    },
+    "price": {
+      "$ref": "money.json",
+      "description": "注文時の製品の価格"
+    },
+    "selectedVariations": {
+      "type": "array",
+      "items": {
+        "$ref": "productVariation.json"
+      },
+      "description": "選択された製品のバリエーション"
+    },
+    "discounts": {
+      "type": "array",
+      "items": {
+        "$ref": "discount.json"
+      },
+      "description": "この注文項目に適用された割引"
+    },
+    "subtotal": {
+      "$ref": "money.json",
+      "description": "注文項目の小計（割引適用前）"
+    },
+    "total": {
+      "$ref": "money.json",
+      "description": "注文項目の合計（割引適用後）"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["processing", "shipped", "delivered", "cancelled", "returned"],
+      "description": "注文項目のステータス",
+      "maxLength": 20
+    },
+    "estimatedDeliveryDate": {
+      "type": "string",
+      "format": "date",
+      "description": "予想配達日"
+    },
+    "actualDeliveryDate": {
+      "type": "string",
+      "format": "date",
+      "description": "実際の配達日"
+    },
+    "trackingNumber": {
+      "type": "string",
+      "description": "配送追跡番号",
+      "maxLength": 50
+    },
+    "giftWrapping": {
+      "type": "object",
+      "properties": {
+        "isGiftWrapped": {
+          "type": "boolean",
+          "description": "ギフトラッピングが適用されているかどうか"
+        },
+        "message": {
+          "type": "string",
+          "description": "ギフトメッセージ",
+          "maxLength": 500
+        },
+        "wrappingCost": {
+          "$ref": "money.json",
+          "description": "ギフトラッピングの料金"
+        }
+      },
+      "description": "ギフトラッピングの情報"
+    },
+    "returnInfo": {
+      "type": "object",
+      "properties": {
+        "isReturned": {
+          "type": "boolean",
+          "description": "商品が返品されたかどうか"
+        },
+        "returnDate": {
+          "type": "string",
+          "format": "date",
+          "description": "返品された日付"
+        },
+        "returnReason": {
+          "type": "string",
+          "description": "返品理由",
+          "maxLength": 500
+        }
+      },
+      "description": "返品情報"
+    },
+    "notes": {
+      "type": "string",
+      "description": "注文項目に関する備考",
+      "maxLength": 500
+    }
+  },
+  "required": ["orderItemId", "product", "quantity", "price", "subtotal", "total", "status"]
+}
+
+{
+  "$id": "shippingMethod.json",
+  "type": "object",
+  "properties": {
+    "shippingMethodId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "配送方法の一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "配送方法の名前",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "配送方法の説明",
+      "maxLength": 500
+    },
+    "carrier": {
+      "type": "string",
+      "description": "配送業者名",
+      "maxLength": 100
+    },
+    "estimatedDeliveryTime": {
+      "type": "string",
+      "description": "推定配送時間（例：2-3営業日）",
+      "maxLength": 50
+    },
+    "baseCost": {
+      "$ref": "money.json",
+      "description": "基本配送料金"
+    },
+    "freeShippingThreshold": {
+      "$ref": "money.json",
+      "description": "送料無料となる注文金額の閾値"
+    },
+    "restrictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "description": "配送方法の制限事項（例：特定の地域のみ）"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "この配送方法が現在利用可能かどうか"
+    }
+  },
+  "required": ["shippingMethodId", "name", "carrier", "baseCost", "isActive"]
+}
+
+{
+  "$id": "category.json",
+  "type": "object",
+  "properties": {
+    "categoryId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "カテゴリーの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "カテゴリー名",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "カテゴリーの説明",
+      "maxLength": 500
+    },
+    "parentCategory": {
+      "$ref": "category.json",
+      "description": "親カテゴリー（存在する場合）"
+    },
+    "subcategories": {
+      "type": "array",
+      "items": {
+        "$ref": "category.json"
+      },
+      "description": "サブカテゴリーのリスト"
+    },
+    "image": {
+      "$ref": "image.json",
+      "description": "カテゴリーの代表画像"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "このカテゴリーに属する製品のリスト"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "このカテゴリーが現在アクティブかどうか"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URLに使用されるカテゴリーのスラッグ",
+      "maxLength": 100,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "SEOタイトル",
+          "maxLength": 60
+        },
+        "description": {
+          "type": "string",
+          "description": "SEOメタ説明",
+          "maxLength": 160
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "description": "SEOキーワード"
+        }
+      },
+      "description": "カテゴリーのメタデータ（SEO目的）"
+    },
+    "marketplace": {
+      "$ref": "marketplace.json",
+      "description": "カテゴリーが属するマーケットプレイス"
+    }
+  },
+  "required": ["categoryId", "name", "isActive", "slug", "marketplace"]
+}
+
+{
+  "$id": "wishlistItem.json",
+  "type": "object",
+  "properties": {
+    "wishlistItemId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ウィッシュリスト項目の一意の識別子",
+      "maxLength": 36
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "ウィッシュリスト項目を追加したユーザー"
+    },
+    "product": {
+      "$ref": "product.json",
+      "description": "ウィッシュリストに追加された製品"
+    },
+    "addedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ウィッシュリストに追加された日時"
+    },
+    "notes": {
+      "type": "string",
+      "description": "ユーザーのメモ",
+      "maxLength": 500
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "ウィッシュリスト項目の優先度（1-5）"
+    },
+    "priceAtAddition": {
+      "$ref": "money.json",
+      "description": "追加時の製品価格"
+    },
+    "currentPrice": {
+      "$ref": "money.json",
+      "description": "現在の製品価格"
+    },
+    "isInStock": {
+      "type": "boolean",
+      "description": "製品が現在在庫があるかどうか"
+    }
+  },
+  "required": ["wishlistItemId", "user", "product", "addedAt"]
+}
+
+{
+  "$id": "promotion.json",
+  "type": "object",
+  "properties": {
+    "promotionId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "プロモーションの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "プロモーション名",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "プロモーションの説明",
+      "maxLength": 500
+    },
+    "type": {
+      "type": "string",
+      "enum": ["discount", "freeShipping", "buyOneGetOne", "giftWithPurchase"],
+      "description": "プロモーションの種類",
+      "maxLength": 20
+    },
+    "discount": {
+      "$ref": "discount.json",
+      "description": "適用される割引（該当する場合）"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "プロモーション開始日時"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "プロモーション終了日時"
+    },
+    "couponCode": {
+      "type": "string",
+      "description": "関連するクーポンコード（存在する場合）",
+      "maxLength": 50
+    },
+    "minimumPurchaseAmount": {
+      "$ref": "money.json",
+      "description": "プロモーション適用の最小購入金額"
+    },
+    "applicableProducts": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "プロモーションが適用される製品リスト"
+    },
+    "applicableCategories": {
+      "type": "array",
+      "items": {
+        "$ref": "category.json"
+      },
+      "description": "プロモーションが適用されるカテゴリーリスト"
+    },
+    "isActive": {
+      "type": "boolean",
+      "description": "プロモーションが現在アクティブかどうか"
+    },
+    "usageLimit": {
+      "type": "integer",
+      "description": "プロモーションの使用可能回数",
+      "minimum": 0
+    },
+    "usageCount": {
+      "type": "integer",
+      "description": "プロモーションの使用回数",
+      "minimum": 0
+    },
+    "termsAndConditions": {
+      "type": "string",
+      "description": "プロモーションの利用規約",
+      "maxLength": 1000
+    }
+  },
+  "required": ["promotionId", "name", "type", "startDate", "endDate", "isActive"]
+}
+
+{
+  "$id": "inventory.json",
+  "type": "object",
+  "properties": {
+    "inventoryId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "在庫の一意の識別子",
+      "maxLength": 36
+    },
+    "product": {
+      "$ref": "product.json",
+      "description": "在庫に関連する製品"
+    },
+    "quantity": {
+      "type": "integer",
+      "description": "現在の在庫数量",
+      "minimum": 0
+    },
+    "lowStockThreshold": {
+      "type": "integer",
+      "description": "在庫低下警告のしきい値",
+      "minimum": 0
+    },
+    "lastRestockDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "最後に在庫補充した日時"
+    },
+    "nextRestockDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "次回の在庫補充予定日時"
+    },
+    "isInStock": {
+      "type": "boolean",
+      "description": "製品が現在在庫があるかどうか"
+    },
+    "warehouseLocation": {
+      "type": "string",
+      "description": "倉庫内の在庫の場所",
+      "maxLength": 100
+    },
+    "reservedQuantity": {
+      "type": "integer",
+      "description": "予約済みの数量（注文処理中など）",
+      "minimum": 0
+    },
+    "availableQuantity": {
+      "type": "integer",
+      "description": "実際に利用可能な数量（総数量 - 予約済み数量）",
+      "minimum": 0
+    }
+  },
+  "required": ["inventoryId", "product", "quantity", "isInStock"]
+}
+
+{
+  "$id": "marketplace.json",
+  "type": "object",
+  "properties": {
+    "marketplaceId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "マーケットプレイスの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "マーケットプレイスの名前",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "マーケットプレイスの説明",
+      "maxLength": 500
+    },
+    "sellers": {
+      "type": "array",
+      "items": {
+        "$ref": "seller.json"
+      },
+      "description": "マーケットプレイスに参加している販売者のリスト"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "category.json"
+      },
+      "description": "マーケットプレイスのカテゴリー構造"
+    },
+    "commissionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "マーケットプレイスの手数料率（パーセンテージ）"
+    },
+    "policies": {
+      "type": "object",
+      "properties": {
+        "returns": {
+          "type": "string",
+          "description": "返品ポリシー",
+          "maxLength": 1000
+        },
+        "shipping": {
+          "type": "string",
+          "description": "配送ポリシー",
+          "maxLength": 1000
+        },
+        "disputes": {
+          "type": "string",
+          "description": "紛争解決ポリシー",
+          "maxLength": 1000
+        }
+      },
+      "description": "マーケットプレイスのポリシー"
+    }
+  },
+  "required": ["marketplaceId", "name", "commissionRate"]
+}
+
+{
+  "$id": "seller.json",
+  "type": "object",
+  "properties": {
+    "sellerId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "販売者の一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "販売者名",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "販売者の説明",
+      "maxLength": 500
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "販売者の平均評価"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "$ref": "product.json"
+      },
+      "description": "販売者が提供する製品のリスト"
+    },
+    "contactInformation": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "販売者の連絡先メールアドレス",
+          "maxLength": 255
+        },
+        "phone": {
+          "type": "string",
+          "description": "販売者の連絡先電話番号",
+          "maxLength": 20
+        }
+      },
+      "description": "販売者の連絡先情報"
+    },
+    "businessAddress": {
+      "$ref": "address.json",
+      "description": "販売者のビジネス住所"
+    },
+    "taxInformation": {
+      "type": "object",
+      "properties": {
+        "taxId": {
+          "type": "string",
+          "description": "販売者の税務ID",
+          "maxLength": 50
+        },
+        "taxClassification": {
+          "type": "string",
+          "description": "販売者の税務分類",
+          "maxLength": 50
+        }
+      },
+      "description": "販売者の税務情報"
+    },
+    "performanceMetrics": {
+      "type": "object",
+      "properties": {
+        "orderFulfillmentRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "注文履行率（パーセンテージ）"
+        },
+        "customerSatisfactionScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "顧客満足度スコア"
+        },
+        "responseTime": {
+          "type": "number",
+          "description": "平均応答時間（時間単位）"
+        }
+      },
+      "description": "販売者のパフォーマンス指標"
+    }
+  },
+  "required": ["sellerId", "name", "contactInformation", "businessAddress"]
+}
+
+{
+  "$id": "fulfillmentCenter.json",
+  "type": "object",
+  "properties": {
+    "centerId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "フルフィルメントセンターの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "フルフィルメントセンターの名前",
+      "maxLength": 100
+    },
+    "address": {
+      "$ref": "address.json",
+      "description": "フルフィルメントセンターの住所"
+    },
+    "capacity": {
+      "type": "integer",
+      "description": "保管可能な商品数",
+      "minimum": 0
+    },
+    "inventoryItems": {
+      "type": "array",
+      "items": {
+        "$ref": "inventory.json"
+      },
+      "description": "このセンターで保管されている在庫項目のリスト"
+    },
+    "shippingMethods": {
+      "type": "array",
+      "items": {
+        "$ref": "shippingMethod.json"
+      },
+      "description": "このセンターで利用可能な配送方法"
+    },
+    "operatingHours": {
+      "type": "string",
+      "description": "センターの営業時間",
+      "maxLength": 100
+    }
+  },
+  "required": ["centerId", "name", "address", "capacity"]
+}
+
+{
+  "$id": "affiliateProgram.json",
+  "type": "object",
+  "properties": {
+    "programId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "アフィリエイトプログラムの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "プログラム名",
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "プログラムの説明",
+      "maxLength": 500
+    },
+    "commissionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "アフィリエイト報酬率（パーセンテージ）"
+    },
+    "terms": {
+      "type": "string",
+      "description": "プログラムの利用規約",
+      "maxLength": 1000
+    },
+    "affiliates": {
+      "type": "array",
+      "items": {
+        "$ref": "affiliate.json"
+      },
+      "description": "プログラムに参加しているアフィリエイトのリスト"
+    }
+  },
+  "required": ["programId", "name", "commissionRate", "terms"]
+}
+
+{
+  "$id": "affiliate.json",
+  "type": "object",
+  "properties": {
+    "affiliateId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "アフィリエイトの一意の識別子",
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "description": "アフィリエイト名",
+      "maxLength": 100
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "アフィリエイトのウェブサイト",
+      "maxLength": 2083
+    },
+    "earnings": {
+      "$ref": "money.json",
+      "description": "累積報酬額"
+    },
+    "clickCount": {
+      "type": "integer",
+      "description": "アフィリエイトリンクのクリック数",
+      "minimum": 0
+    },
+    "conversionRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "コンバージョン率（パーセンテージ）"
+    },
+    "paymentInfo": {
+      "type": "object",
+      "properties": {
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["bankTransfer", "paypal", "check"],
+          "description": "支払い方法"
+        },
+        "accountDetails": {
+          "type": "string",
+          "description": "支払い口座の詳細",
+          "maxLength": 500
+        }
+      },
+      "description": "アフィリエイトの支払い情報"
+    }
+  },
+  "required": ["affiliateId", "name", "website", "paymentInfo"]
+}
+
+{
+  "$id": "subscription.json",
+  "type": "object",
+  "properties": {
+    "subscriptionId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "サブスクリプションの一意の識別子",
+      "maxLength": 36
+    },
+    "user": {
+      "$ref": "user.json",
+      "description": "サブスクリプションを購入したユーザー"
+    },
+    "plan": {
+      "type": "string",
+      "enum": ["basic", "premium", "family"],
+      "description": "サブスクリプションプラン",
+      "maxLength": 20
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "サブスクリプション開始日"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "サブスクリプション終了日"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "canceled", "expired"],
+      "description": "サブスクリプションの状態",
+      "maxLength": 20
+    },
+    "autoRenew": {
+      "type": "boolean",
+      "description": "自動更新が有効かどうか"
+    },
+    "price": {
+      "$ref": "money.json",
+      "description": "サブスクリプションの価格"
+    },
+    "billingCycle": {
+      "type": "string",
+      "enum": ["monthly", "yearly"],
+      "description": "請求サイクル",
+      "maxLength": 20
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "description": "サブスクリプションに含まれる機能のリスト"
+    }
+  },
+  "required": ["subscriptionId", "user", "plan", "startDate", "status", "price", "billingCycle"]
+}
