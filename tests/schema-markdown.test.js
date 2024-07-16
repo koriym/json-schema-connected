@@ -1,4 +1,4 @@
-const { jsonSchemaToMarkdown, convertJsonSchemasToMarkdowns } = require('./schema-markdown');
+const { jsonSchemaToMarkdown, convertJsonSchemasToMarkdowns } = require('../schema-markdown');
 
 describe('JSON Schema to Markdown Converter', () => {
     const schemaRegistry = {};
