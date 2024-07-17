@@ -1,6 +1,6 @@
 {
   "name": "json-schema-connected",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A versatile tool for connecting JSON Schema with various technologies like databases, PHP, and more.",
   "main": "array-shape.js",
   "scripts": {
